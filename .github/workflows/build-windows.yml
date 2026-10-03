@@ -47,17 +47,19 @@ jobs:
         run: |
           mkdir -p build && cd build
           cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+          ninja || ninja -j 1 -v
           ninja create-windows-installer || ninja windows-binaries
           cp -f veyon-*.exe .. 2>/dev/null || true
           cp -f */veyon-*.exe .. 2>/dev/null || true
           cd ..
-          ls -la *.exe build/*.exe 2>/dev/null || true
+          ls -la *.exe build/*.exe build/*/*.exe 2>/dev/null || true
 
       - name: Upload Installer Setup
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: veyon-custom-win64-setup
           path: |
-            veyon-*.exe
-            build/veyon-*.exe
-            build/*/veyon-*.exe
+            *.exe
+            build/*.exe
+            build/*/*.exe
