@@ -64,6 +64,12 @@ target_include_directories(windows-platform PRIVATE
 	${ultravnc_DIR}/addon/ms-logon/authSSP
 	${ultravnc_DIR}/winvnc/winvnc
 	${ultravnc_DIR}
+	${CMAKE_SOURCE_DIR}/3rdparty/interception
+	)
+
+target_link_directories(windows-platform PRIVATE
+	${CMAKE_SOURCE_DIR}/3rdparty/interception
+	${CMAKE_SOURCE_DIR}/3rdparty/interception/x64
 	)
 
 target_link_libraries(windows-platform PRIVATE -lws2_32 -lwtsapi32 -lnetapi32 -luserenv -limm32 -lntdll -linterception -liphlpapi -lsetupapi -lsecur32)
