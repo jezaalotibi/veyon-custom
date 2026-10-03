@@ -68,7 +68,7 @@ void ScreenRecorderFeaturePlugin::startRecording( const ComputerControlInterface
 
 	for( const auto& iface : computerControlInterfaces )
 	{
-		QString host = iface->computer().hostName().isEmpty() ? iface->computer().hostAddress() : iface->computer().hostName();
+		QString host = iface->computer().hostName().isEmpty() ? iface->computer().hostAddress().toString() : iface->computer().hostName();
 		QString sessionDir = baseDir + QDir::separator() + QStringLiteral("%1_%2").arg( host, timestamp );
 		QDir().mkpath( sessionDir );
 
