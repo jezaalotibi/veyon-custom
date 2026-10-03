@@ -438,12 +438,13 @@ void BuiltinDirectoryConfigurationPage::discoverComputers()
 			QString hostName = QHostInfo::fromName( targetIp.toString() ).hostName();
 			if( hostName.isEmpty() || hostName == targetIp.toString() )
 			{
-				hostName = QStringLiteral("PC-%1").arg( targetIp.toString().section( '.', 3, 3 ) );
+				hostName = QStringLiteral("PC-%1").arg( targetIp.toString().section( QLatin1Char('.'), 3, 3 ) );
 			}
 
 			bool exists = false;
-			for( const auto& obj : objectManager.objects() )
+			for( const auto& objVal : objectManager.objects() )
 			{
+				const NetworkObject obj( objVal.toObject() );
 				if( obj.hostAddress() == targetIp.toString() && obj.parentUid() == currentLocationUid )
 				{
 					exists = true;
