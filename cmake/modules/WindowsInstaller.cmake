@@ -47,7 +47,7 @@ add_custom_target(windows-binaries
 	COMMAND cp ${DLLDIR}/libqca-qt6.dll ${WINDOWS_INSTALL_FILES}
 	COMMAND cp ${DLLDIR}/libsasl2-3.dll ${WINDOWS_INSTALL_FILES}
 	COMMAND cp ${DLLDIR}/libldap.dll ${DLLDIR}/liblber.dll ${WINDOWS_INSTALL_FILES}
-	COMMAND cp ${DLLDIR}/interception.dll ${WINDOWS_INSTALL_FILES}
+	COMMAND cp ${DLLDIR}/interception.dll ${WINDOWS_INSTALL_FILES} 2>/dev/null || true
 	COMMAND cp ${DLLDIR}/liblzo2-2.dll ${WINDOWS_INSTALL_FILES}
 	COMMAND cp ${DLLDIR}/libvncclient.dll ${WINDOWS_INSTALL_FILES}
 	COMMAND cp ${DLLDIR}/libvncserver.dll ${WINDOWS_INSTALL_FILES}
@@ -57,7 +57,7 @@ add_custom_target(windows-binaries
 	COMMAND cp ${DLLDIR_GCC}/libssp-0.dll ${WINDOWS_INSTALL_FILES}
 	COMMAND cp ${DLLDIR_GCC}/${DLL_GCC} ${WINDOWS_INSTALL_FILES}
 	COMMAND mkdir -p ${WINDOWS_INSTALL_FILES}/crypto
-	COMMAND cp ${DLLDIR_LIB}/qca-qt6/crypto/libqca-ossl.dll ${WINDOWS_INSTALL_FILES}/crypto
+	COMMAND cp ${DLLDIR_LIB}/qca-qt6/crypto/libqca-ossl.dll ${WINDOWS_INSTALL_FILES}/crypto 2>/dev/null || cp ${MINGW_PREFIX}/lib/qca-qt6/crypto/*.dll ${WINDOWS_INSTALL_FILES}/crypto 2>/dev/null || true
 	COMMAND cp ${DLLDIR}/Qt6Core.dll
 				${DLLDIR}/Qt6Core5Compat.dll
 				${DLLDIR}/Qt6Gui.dll
