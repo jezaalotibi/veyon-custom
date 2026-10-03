@@ -45,11 +45,13 @@ jobs:
       - name: Build Windows Installer
         shell: msys2 {0}
         run: |
-          mkdir build && cd build
+          mkdir -p build && cd build
           cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
           ninja create-windows-installer || ninja windows-binaries
           cp -f veyon-*.exe .. 2>/dev/null || true
           cp -f */veyon-*.exe .. 2>/dev/null || true
+          cd ..
+          ls -la *.exe build/*.exe 2>/dev/null || true
 
       - name: Upload Installer Setup
         uses: actions/upload-artifact@v4
@@ -58,3 +60,4 @@ jobs:
           path: |
             veyon-*.exe
             build/veyon-*.exe
+            build/*/veyon-*.exe
