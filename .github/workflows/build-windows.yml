@@ -1,0 +1,30 @@
+name: "Build Custom Windows Setup"
+
+on:
+  push:
+    branches: [ '**' ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: ubuntu-latest
+    container: veyon/ci-mingw-w64:main
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Build Windows Installer
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          .ci/windows/build.sh x86_64
+
+      - name: Upload Installer Setup
+        uses: actions/upload-artifact@v4
+        with:
+          name: veyon-custom-win64-setup
+          path: |
+            veyon-*.exe
+            veyon-*win64*
