@@ -58,5 +58,5 @@ jobs:
         with:
           name: veyon-custom-win64-setup
           path: |
-            *.exe
-            build/*.exe
+            veyon-*setup.exe
+            build/veyon-*setup.exe
