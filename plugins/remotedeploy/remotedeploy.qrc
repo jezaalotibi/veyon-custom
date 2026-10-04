@@ -1,0 +1,5 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/remotedeploy">
+    <file>remotedeploy.png</file>
+</qresource>
+</RCC>

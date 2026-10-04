@@ -78,9 +78,6 @@ private:
 		return "originalSize";
 	}
 
-protected:
-	void closeEvent( QCloseEvent* event ) override;
-
 private:
 	void addFeaturesToToolBar();
 	void addSubFeaturesToToolButton( QToolButton* button, const Feature& parentFeature );
