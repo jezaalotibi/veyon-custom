@@ -756,6 +756,38 @@ Make sure that the names of the keys belonging to each other are identical on al
         <source>New computer</source>
         <translation>جهاز جديد</translation>
     </message>
+    <message>
+        <source>Auto-discover computers on network</source>
+        <translation>اكتشاف الأجهزة تلقائياً في الشبكة</translation>
+    </message>
+    <message>
+        <source>Please select or create a location first.</source>
+        <translation>يرجى تحديد أو إنشاء موقع أولاً.</translation>
+    </message>
+    <message>
+        <source>No active network adapter found.</source>
+        <translation>لم يتم العثور على محول شبكة نشط.</translation>
+    </message>
+    <message>
+        <source>Scanning network for Veyon computers...</source>
+        <translation>جاري فحص الشبكة بحثاً عن أجهزة Veyon...</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>Network Discovery</source>
+        <translation>اكتشاف أجهزة الشبكة</translation>
+    </message>
+    <message>
+        <source>Discovered and added %1 computers to '%2'.</source>
+        <translation>تم اكتشاف وإضافة %1 جهاز إلى '%2'.</translation>
+    </message>
+    <message>
+        <source>Scan completed. No new computers found on port 11100.</source>
+        <translation>اكتمل الفحص. لم يتم العثور على أجهزة جديدة على المنفذ 11100.</translation>
+    </message>
 </context>
 <context>
     <name>BuiltinDirectoryPlugin</name>
@@ -3660,6 +3692,14 @@ Press and hold to load arrangement from a file or save current arrangement to a 
         <source>Name:</source>
         <translation>الاسم:</translation>
     </message>
+    <message>
+        <source>تشغيل وضع منع الخروج</source>
+        <translation>تشغيل وضع منع الخروج</translation>
+    </message>
+    <message>
+        <source>فتح الموقع بملء الشاشة مع منع إغلاق الصفحة وحظر مفاتيح الهروب</source>
+        <translation>فتح الموقع بملء الشاشة مع منع إغلاق الصفحة وحظر مفاتيح الهروب</translation>
+    </message>
 </context>
 <context>
     <name>PasswordDialog</name>
@@ -4984,12 +5024,24 @@ Example: [^-]*-(PC[0-9]*)</source>
         <translation>الوصول للإنترنت</translation>
     </message>
     <message>
+        <source>InternetAccess</source>
+        <translation>حظر الإنترنت</translation>
+    </message>
+    <message>
         <source>Block Internet</source>
         <translation>حظر الإنترنت</translation>
     </message>
     <message>
         <source>Unblock Internet</source>
         <translation>إلغاء حظر الإنترنت</translation>
+    </message>
+    <message>
+        <source>Block and unblock internet access on client computers</source>
+        <translation>حظر وإلغاء حظر الوصول إلى الإنترنت على أجهزة الطلاب</translation>
+    </message>
+    <message>
+        <source>Click this button to block or unblock internet access on all student computers.</source>
+        <translation>انقر فوق هذا الزر لحظر أو إلغاء حظر الوصول إلى الإنترنت على جميع أجهزة الطلاب.</translation>
     </message>
     <message>
         <source>Block or unblock Internet access for selected computers</source>
@@ -5003,8 +5055,16 @@ Example: [^-]*-(PC[0-9]*)</source>
         <translation>مسجل الشاشة</translation>
     </message>
     <message>
+        <source>ScreenRecorder</source>
+        <translation>تسجيل الشاشة</translation>
+    </message>
+    <message>
         <source>Record Screen</source>
         <translation>تسجيل الشاشة</translation>
+    </message>
+    <message>
+        <source>Stop Recording</source>
+        <translation>إيقاف التسجيل</translation>
     </message>
     <message>
         <source>Start recording</source>
@@ -5013,6 +5073,14 @@ Example: [^-]*-(PC[0-9]*)</source>
     <message>
         <source>Stop recording</source>
         <translation>إيقاف التسجيل</translation>
+    </message>
+    <message>
+        <source>Record screens of student computers to video or image sequence</source>
+        <translation>تسجيل شاشات أجهزة الطلاب كفيديو أو تسلسل صور</translation>
+    </message>
+    <message>
+        <source>Click to start or stop recording screens of selected student computers.</source>
+        <translation>انقر لبدء أو إيقاف تسجيل شاشات أجهزة الطلاب المحددة.</translation>
     </message>
     <message>
         <source>Record screens of selected computers</source>
