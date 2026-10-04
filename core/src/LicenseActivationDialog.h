@@ -18,7 +18,7 @@ public:
 	explicit LicenseActivationDialog( QWidget* parent = nullptr );
 	~LicenseActivationDialog() override = default;
 
-private slots:
+private:
 	void performOnlineActivation();
 	void copyMachineId();
 	void openWhatsApp();

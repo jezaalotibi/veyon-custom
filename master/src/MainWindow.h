@@ -29,6 +29,7 @@
 #include "ComputerControlInterface.h"
 
 class QButtonGroup;
+class QCloseEvent;
 class QToolButton;
 
 class VeyonMaster;
