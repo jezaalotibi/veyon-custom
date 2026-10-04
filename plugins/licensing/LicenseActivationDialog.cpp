@@ -75,7 +75,7 @@ void LicenseActivationDialog::setupUi()
 	auto keyLayout = new QVBoxLayout( keyBox );
 
 	m_licenseKeyEdit = new QLineEdit( this );
-	m_licenseKeyEdit->setPlaceholderText( tr("أدخل مفتاح التنشيط: TMK-XXXX-XXXXXXXXXXXX") );
+	m_licenseKeyEdit->setPlaceholderText( tr("أدخل مفتاح التنشيط: VEYON-XXXX-XXXXXXXXXXXX / LIC-...") );
 	m_licenseKeyEdit->setText( LicenseManager::storedLicenseKey() );
 	keyLayout->addWidget( m_licenseKeyEdit );
 

@@ -150,10 +150,10 @@ void LicenseManager::activateOnline( const QString& licenseKey,
 									std::function<void( bool, const QString&, const VerificationResult& )> callback )
 {
 	QString cleanKey = licenseKey.trimmed().toUpper();
-	if( !cleanKey.startsWith( QStringLiteral("TMK-") ) )
+	if( cleanKey.length() < 8 )
 	{
 		VerificationResult res;
-		res.message = QStringLiteral("صيغة مفتاح الترخيص غير صحيحة. يجب أن يبدأ بـ TMK-");
+		res.message = QStringLiteral("صيغة مفتاح الترخيص غير صحيحة. يرجى إدخال مفتاح ترخيص صالح.");
 		callback( false, res.message, res );
 		return;
 	}
@@ -165,7 +165,11 @@ void LicenseManager::activateOnline( const QString& licenseKey,
 
 	QJsonObject body;
 	body[QStringLiteral("licenseId")] = cleanKey;
+	body[QStringLiteral("key")] = cleanKey;
 	body[QStringLiteral("machineId")] = getMachineId();
+	body[QStringLiteral("machine_id")] = getMachineId();
+	body[QStringLiteral("app")] = QStringLiteral("veyon");
+	body[QStringLiteral("product")] = QStringLiteral("veyon");
 
 	QJsonDocument doc( body );
 	auto reply = nam->post( req, doc.toJson() );
