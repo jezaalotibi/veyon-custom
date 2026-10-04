@@ -18,7 +18,8 @@ public:
 		Default = 0,
 		Vision2030,
 		FoundingDay,
-		ModernNajd
+		ModernNajd,
+		LabProNetSupport
 	};
 
 	static Theme currentTheme();

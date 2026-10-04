@@ -21,7 +21,7 @@ ThemeManager::Theme ThemeManager::currentTheme()
 {
 	QSettings settings( QStringLiteral("Veyon"), QStringLiteral("UI") );
 	int val = settings.value( QStringLiteral("SelectedTheme"), 0 ).toInt();
-	if( val < 0 || val > 3 ) val = 0;
+	if( val < 0 || val > 4 ) val = 0;
 	return static_cast<Theme>( val );
 }
 
@@ -29,6 +29,8 @@ QString ThemeManager::themeName( Theme theme )
 {
 	switch( theme )
 	{
+	case Theme::LabProNetSupport:
+		return QStringLiteral("🏫 نمط المعمل الاحترافي (Lab Pro Theme)");
 	case Theme::Vision2030:
 		return QStringLiteral("🇸🇦 ستايل رؤية المملكة 2030 (الأخضر الملكي الزمردي)");
 	case Theme::FoundingDay:
@@ -108,6 +110,31 @@ QString ThemeManager::themeStylesheet( Theme theme )
 			"QScrollBar::handle:vertical { background: #d97706; border-radius: 6px; }\n"
 		);
 
+	case Theme::LabProNetSupport:
+		return QStringLiteral(
+			"QMainWindow, QDialog, QWidget { background-color: #f1f5f9; color: #1e293b; font-family: 'Segoe UI', Tahoma, Arial; }\n"
+			"QToolBar { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #005a9e, stop:1 #0078d7); border-bottom: 2px solid #004578; spacing: 8px; padding: 6px; }\n"
+			"QToolButton { background-color: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 14px; font-weight: bold; }\n"
+			"QToolButton:hover { background-color: #e0f2fe; border: 1px solid #0284c7; color: #0369a1; }\n"
+			"QToolButton:checked { background-color: #0284c7; border: 2px solid #075985; color: #ffffff; }\n"
+			"QMenuBar { background-color: #005a9e; color: #ffffff; border-bottom: 1px solid #004578; }\n"
+			"QMenuBar::item { background: transparent; color: #ffffff; padding: 5px 10px; }\n"
+			"QMenuBar::item:selected { background-color: #0078d7; border-radius: 4px; }\n"
+			"QMenu { background-color: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; }\n"
+			"QMenu::item:selected { background-color: #0078d7; color: #ffffff; }\n"
+			"QPushButton { background-color: #0078d7; color: #ffffff; border: 1px solid #005a9e; border-radius: 6px; padding: 6px 16px; font-weight: bold; }\n"
+			"QPushButton:hover { background-color: #005a9e; }\n"
+			"QTableWidget, QListView, QTreeView { background-color: #ffffff; color: #0f172a; gridline-color: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px; }\n"
+			"QHeaderView::section { background-color: #e2e8f0; color: #0f172a; border: 1px solid #cbd5e1; padding: 5px; font-weight: bold; }\n"
+			"QGroupBox { border: 1px solid #cbd5e1; border-radius: 8px; margin-top: 12px; font-weight: bold; color: #005a9e; background-color: #ffffff; }\n"
+			"QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top right; padding: 0 6px; }\n"
+			"QLineEdit, QComboBox { background-color: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 6px; padding: 5px; }\n"
+			"QLineEdit:focus, QComboBox:focus { border: 2px solid #0078d7; }\n"
+			"QStatusBar { background-color: #e2e8f0; color: #475569; border-top: 1px solid #cbd5e1; }\n"
+			"QScrollBar:vertical { background: #f1f5f9; width: 12px; }\n"
+			"QScrollBar::handle:vertical { background: #0078d7; border-radius: 6px; }\n"
+		);
+
 	case Theme::Default:
 	default:
 		return QString();
@@ -118,7 +145,7 @@ bool ThemeManager::setTheme( Theme theme, QWidget* parent )
 {
 	if( theme != Theme::Default )
 	{
-		if( !LicenseManager::requireActivation( parent, QStringLiteral("المظهر والاستايل السعودي") ) )
+		if( !LicenseManager::requireActivation( parent, QStringLiteral("المظهر والستايل المتقدم") ) )
 		{
 			return false;
 		}
@@ -168,6 +195,7 @@ void ThemeManager::showThemeSelectionDialog( QWidget* parent )
 	auto btnGroup = new QButtonGroup( dlg );
 
 	auto rDefault = new QRadioButton( themeName( Theme::Default ), group );
+	auto rLabPro = new QRadioButton( themeName( Theme::LabProNetSupport ), group );
 	auto r2030 = new QRadioButton( themeName( Theme::Vision2030 ), group );
 	auto rFounding = new QRadioButton( themeName( Theme::FoundingDay ), group );
 	auto rNajd = new QRadioButton( themeName( Theme::ModernNajd ), group );
@@ -176,8 +204,10 @@ void ThemeManager::showThemeSelectionDialog( QWidget* parent )
 	btnGroup->addButton( r2030, 1 );
 	btnGroup->addButton( rFounding, 2 );
 	btnGroup->addButton( rNajd, 3 );
+	btnGroup->addButton( rLabPro, 4 );
 
 	grpLayout->addWidget( rDefault );
+	grpLayout->addWidget( rLabPro );
 	grpLayout->addWidget( r2030 );
 	grpLayout->addWidget( rFounding );
 	grpLayout->addWidget( rNajd );
@@ -185,6 +215,7 @@ void ThemeManager::showThemeSelectionDialog( QWidget* parent )
 	Theme cur = currentTheme();
 	switch( cur )
 	{
+	case Theme::LabProNetSupport: rLabPro->setChecked( true ); break;
 	case Theme::Vision2030: r2030->setChecked( true ); break;
 	case Theme::FoundingDay: rFounding->setChecked( true ); break;
 	case Theme::ModernNajd: rNajd->setChecked( true ); break;
