@@ -40,6 +40,7 @@ jobs:
             mingw-w64-x86_64-openldap
             mingw-w64-x86_64-cyrus-sasl
             mingw-w64-x86_64-nsis
+            mingw-w64-x86_64-ntldd
             dos2unix
 
       - name: Build Windows Installer

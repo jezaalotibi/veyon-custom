@@ -49,6 +49,20 @@ cp -f ${MINGW_PREFIX}/bin/libstdc++*.dll "${INSTALL_DIR}/" 2>/dev/null || true
 cp -f ${MINGW_PREFIX}/bin/libgcc_s_seh-1.dll "${INSTALL_DIR}/" 2>/dev/null || true
 cp -f ${MINGW_PREFIX}/bin/libssp*.dll "${INSTALL_DIR}/" 2>/dev/null || true
 
+# Copy Qt6 & C-runtime dependencies from MinGW
+cp -f ${MINGW_PREFIX}/bin/libbrotli*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libzstd*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libb2*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libdouble-conversion*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libpcre2*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libharfbuzz*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libfreetype*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libgraphite2*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libglib*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libintl*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libiconv*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/bin/libmd4c*.dll "${INSTALL_DIR}/" 2>/dev/null || true
+
 # Copy crypto plugins
 mkdir -p "${INSTALL_DIR}/crypto"
 cp -f ${MINGW_PREFIX}/share/qt6/plugins/crypto/*.dll "${INSTALL_DIR}/crypto/" 2>/dev/null || true
@@ -98,6 +112,20 @@ cp -f ${MINGW_PREFIX}/plugins/tls/*.dll "${INSTALL_DIR}/tls/" 2>/dev/null || tru
 find ${MINGW_PREFIX} -name 'qopensslbackend.dll' -exec cp -f '{}' "${INSTALL_DIR}/tls/" \; 2>/dev/null || true
 if [ ! -f "${INSTALL_DIR}/tls/qopensslbackend.dll" ]; then
     touch "${INSTALL_DIR}/tls/qopensslbackend.dll"
+fi
+
+# Automatically discover and copy all DLL dependencies using ntldd
+if command -v ntldd >/dev/null 2>&1; then
+    echo "=== Running ntldd to resolve all DLL dependencies ==="
+    for bin in "${INSTALL_DIR}"/*.exe "${INSTALL_DIR}"/*.dll "${INSTALL_DIR}"/plugins/*.dll "${INSTALL_DIR}"/platforms/*.dll; do
+        [ -f "$bin" ] || continue
+        ntldd -R "$bin" 2>/dev/null | grep -iE 'mingw64|msys64' | sed -n 's/.*=> \([^ ]*\).*/\1/p' | while read -r dllpath; do
+            dllpath_unix=$(echo "$dllpath" | sed -e 's,\\,/,g')
+            if [ -n "$dllpath_unix" ] && [ -f "$dllpath_unix" ]; then
+                cp -n "$dllpath_unix" "${INSTALL_DIR}/" 2>/dev/null || true
+            fi
+        done
+    done
 fi
 
 # Strip binaries
