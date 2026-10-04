@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QTimer>
 
 #include "LicenseActivationDialog.h"
 #include "LicenseManager.h"
@@ -22,13 +23,16 @@ LicenseActivationDialog::LicenseActivationDialog( QWidget* parent ) :
 	m_statusLabel( nullptr ),
 	m_expiryLabel( nullptr ),
 	m_seatsLabel( nullptr ),
+	m_lockoutWarningLabel( nullptr ),
 	m_activateButton( nullptr ),
-	m_deactivateButton( nullptr )
+	m_deactivateButton( nullptr ),
+	m_lockoutTimer( nullptr )
 {
 	setWindowTitle( tr("تنشيط وترخيص البرنامج - License Activation") );
-	setMinimumSize( 560, 480 );
+	setMinimumSize( 560, 520 );
 	setupUi();
 	updateStatusDisplay();
+	checkLockout();
 }
 
 void LicenseActivationDialog::setupUi()
@@ -94,6 +98,13 @@ void LicenseActivationDialog::setupUi()
 	m_licenseKeyEdit->setText( LicenseManager::storedLicenseKey() );
 	keyLayout->addWidget( m_licenseKeyEdit );
 
+	m_lockoutWarningLabel = new QLabel( this );
+	m_lockoutWarningLabel->setStyleSheet( QStringLiteral("background-color: #fef2f2; border: 1px solid #f87171; color: #b91c1c; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 13px;") );
+	m_lockoutWarningLabel->setWordWrap( true );
+	m_lockoutWarningLabel->setAlignment( Qt::AlignCenter );
+	m_lockoutWarningLabel->setVisible( false );
+	keyLayout->addWidget( m_lockoutWarningLabel );
+
 	auto actBtnLayout = new QHBoxLayout();
 	m_activateButton = new QPushButton( tr("☁️ تنشيط عبر السحابة (Cloud Activate)"), this );
 	m_activateButton->setStyleSheet( QStringLiteral("background-color: #2563eb; color: white; font-weight: bold; padding: 8px 16px; border-radius: 6px;") );
@@ -106,6 +117,12 @@ void LicenseActivationDialog::setupUi()
 
 	keyLayout->addLayout( actBtnLayout );
 	mainLayout->addWidget( keyBox );
+
+	// Setup lockout countdown timer
+	m_lockoutTimer = new QTimer( this );
+	m_lockoutTimer->setInterval( 1000 );
+	connect( m_lockoutTimer, &QTimer::timeout, this, &LicenseActivationDialog::checkLockout );
+	m_lockoutTimer->start();
 
 	// Bottom
 	auto btnLayout = new QHBoxLayout();
@@ -147,8 +164,70 @@ void LicenseActivationDialog::openWhatsApp()
 	QDesktopServices::openUrl( QUrl( QStringLiteral("https://wa.me/966575404554") ) );
 }
 
+void LicenseActivationDialog::checkLockout()
+{
+	qint64 remaining = LicenseManager::lockoutRemainingSeconds();
+	if( remaining > 0 )
+	{
+		int hours = int( remaining / 3600 );
+		int mins = int( ( remaining % 3600 ) / 60 );
+		int secs = int( remaining % 60 );
+
+		QString timeStr;
+		if( hours > 0 )
+		{
+			timeStr = QStringLiteral("%1 ساعة و %2 دقيقة").arg( hours ).arg( mins );
+		}
+		else if( mins > 0 )
+		{
+			timeStr = QStringLiteral("%1 دقيقة و %2 ثانية").arg( mins ).arg( secs );
+		}
+		else
+		{
+			timeStr = QStringLiteral("%1 ثانية").arg( secs );
+		}
+
+		if( m_lockoutWarningLabel )
+		{
+			m_lockoutWarningLabel->setText( QStringLiteral("⛔ تم تقييد إدخال التنشيط مؤقتاً لحماية النظام بعد عدة محاولات خاطئة.<br>الوقت المتبقي لفك الحظر: <b style='color:#dc2626;'>%1</b>").arg( timeStr ) );
+			m_lockoutWarningLabel->setVisible( true );
+		}
+		if( m_licenseKeyEdit )
+		{
+			m_licenseKeyEdit->setEnabled( false );
+		}
+		if( m_activateButton )
+		{
+			m_activateButton->setEnabled( false );
+			m_activateButton->setText( QStringLiteral("🔒 مقفل مؤقتاً (%1)").arg( timeStr ) );
+		}
+	}
+	else
+	{
+		if( m_lockoutWarningLabel && m_lockoutWarningLabel->isVisible() )
+		{
+			m_lockoutWarningLabel->setVisible( false );
+		}
+		if( m_licenseKeyEdit && !m_licenseKeyEdit->isEnabled() )
+		{
+			m_licenseKeyEdit->setEnabled( true );
+		}
+		if( m_activateButton && !m_activateButton->isEnabled() )
+		{
+			m_activateButton->setEnabled( true );
+			m_activateButton->setText( tr("☁️ تنشيط عبر السحابة (Cloud Activate)") );
+		}
+	}
+}
+
 void LicenseActivationDialog::performOnlineActivation()
 {
+	if( LicenseManager::lockoutRemainingSeconds() > 0 )
+	{
+		checkLockout();
+		return;
+	}
+
 	QString key = m_licenseKeyEdit->text().trimmed();
 	if( key.isEmpty() )
 	{
@@ -165,11 +244,13 @@ void LicenseActivationDialog::performOnlineActivation()
 
 		if( ok )
 		{
+			checkLockout();
 			QMessageBox::information( this, tr("نجاح التنشيط"), tr("🎉 تم تنشيط البرنامج بنجاح!\nصلاحية الترخيص: %1").arg( res.expiryDate ) );
 			updateStatusDisplay();
 		}
 		else
 		{
+			checkLockout();
 			QMessageBox::critical( this, tr("فشل التنشيط"), msg );
 			updateStatusDisplay();
 		}

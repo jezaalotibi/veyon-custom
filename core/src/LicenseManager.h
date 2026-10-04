@@ -35,6 +35,11 @@ public:
 
 	static bool requireActivation( QWidget* parent = nullptr, const QString& featureName = QString() );
 
+	static int failedAttempts();
+	static qint64 lockoutRemainingSeconds();
+	static void recordFailedAttempt();
+	static void resetFailedAttempts();
+
 	static void activateOnline( const QString& licenseKey,
 								std::function<void( bool success, const QString& message, const VerificationResult& result )> callback );
 };

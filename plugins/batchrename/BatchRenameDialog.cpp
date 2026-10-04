@@ -10,10 +10,24 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QTimer>
+#include <memory>
 
 #include "BatchRenameDialog.h"
 #include "BatchRenameFeaturePlugin.h"
 #include "LicenseManager.h"
+
+static QString resolveAddress( const Computer& comp )
+{
+	if( !comp.hostAddress().isNull() )
+	{
+		return comp.hostAddress().toString();
+	}
+	if( !comp.hostName().isEmpty() )
+	{
+		return comp.hostName();
+	}
+	return comp.displayName();
+}
 
 BatchRenameDialog::BatchRenameDialog( BatchRenameFeaturePlugin& plugin,
 									  const ComputerControlInterfaceList& computers,
@@ -89,6 +103,13 @@ void BatchRenameDialog::setupUi()
 	for( int i = 0; i < m_computers.count(); ++i )
 	{
 		const auto& comp = m_computers.at( i );
+		QString addr = resolveAddress( comp->computer() );
+		QString name = comp->computerName().isEmpty() ? comp->computer().displayName() : comp->computerName();
+		if( name.isEmpty() )
+		{
+			name = addr;
+		}
+
 		auto cardWidget = new QWidget();
 		cardWidget->setStyleSheet( QStringLiteral("QWidget { background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 6px; }") );
 		auto cardLayout = new QHBoxLayout( cardWidget );
@@ -96,8 +117,7 @@ void BatchRenameDialog::setupUi()
 
 		auto infoLayout = new QVBoxLayout();
 		auto nameIp = new QLabel( QStringLiteral("<b>%1</b> <span style='color:gray;'>%2</span>")
-								  .arg( comp->computerName().isEmpty() ? tr("Student-PC") : comp->computerName(),
-										comp->computer().hostAddress().toString() ) );
+								  .arg( name, addr ) );
 		auto targetLabel = new QLabel( tr("<span style='color:#059669;'>الاسم المستهدف: student-pc%1</span>").arg( i + 1 ) );
 		infoLayout->addWidget( nameIp );
 		infoLayout->addWidget( targetLabel );
@@ -110,8 +130,8 @@ void BatchRenameDialog::setupUi()
 		m_cardsLayout->addWidget( cardWidget );
 
 		DeviceCard dc;
-		dc.hostAddress = comp->computer().hostAddress().toString();
-		dc.computerName = comp->computerName();
+		dc.hostAddress = addr;
+		dc.computerName = name;
 		dc.targetName = QStringLiteral("student-pc%1").arg( i + 1 );
 		dc.statusBadge = statusBadge;
 		m_deviceCards.append( dc );
@@ -274,7 +294,8 @@ void BatchRenameDialog::startRenaming()
 
 	m_currentIndex = 0;
 	// Process computers sequentially with slight delay
-	auto processNext = [this, prefix, startNum, renameHost, passType, passVal]() {
+	auto processNext = std::make_shared<std::function<void()>>();
+	*processNext = [this, prefix, startNum, renameHost, passType, passVal, processNext]() {
 		if( m_currentIndex >= m_computers.count() )
 		{
 			m_isRunning = false;
@@ -285,41 +306,43 @@ void BatchRenameDialog::startRenaming()
 			return;
 		}
 
-		auto comp = m_computers.at( m_currentIndex );
-		QString targetName = QStringLiteral("%1%2").arg( prefix ).arg( startNum + m_currentIndex );
+		int idx = m_currentIndex;
+		auto comp = m_computers.at( idx );
+		QString addr = resolveAddress( comp->computer() );
+		QString targetName = QStringLiteral("%1%2").arg( prefix ).arg( startNum + idx );
 
-		if( m_currentIndex < m_deviceCards.count() )
+		if( idx < m_deviceCards.count() )
 		{
-			m_deviceCards[m_currentIndex].targetName = targetName;
-			m_deviceCards[m_currentIndex].statusBadge->setText( tr("⚡ جاري التنفيذ") );
-			m_deviceCards[m_currentIndex].statusBadge->setStyleSheet( QStringLiteral("font-weight: bold; color: #0284c7; background: #e0f2fe; border-radius: 4px; padding: 4px 8px;") );
+			m_deviceCards[idx].targetName = targetName;
+			m_deviceCards[idx].statusBadge->setText( tr("⚡ جاري التنفيذ") );
+			m_deviceCards[idx].statusBadge->setStyleSheet( QStringLiteral("font-weight: bold; color: #0284c7; background: #e0f2fe; border-radius: 4px; padding: 4px 8px;") );
 		}
 
-		addLog( tr("📤 إرسال أمر التسمية للجهاز %1 (الهدف: %2)...").arg( comp->computer().hostAddress().toString(), targetName ), QStringLiteral("#fbbf24") );
+		addLog( tr("📤 إرسال أمر التسمية للجهاز %1 (الهدف: %2)...").arg( addr, targetName ), QStringLiteral("#fbbf24") );
 
 		m_plugin.sendRenameCommand( comp, targetName, renameHost, passType, passVal );
+		addLog( tr("⚡ جاري تطبيق أوامر التسمية على نظام ويندوز (الاسم: %1)...").arg( targetName ), QStringLiteral("#60a5fa") );
 
-		// Simulate completion callback or response
-		QTimer::singleShot( 1200, this, [this, targetName]() {
-			if( m_currentIndex < m_deviceCards.count() )
+		QTimer::singleShot( 1000, this, [this, idx, targetName, processNext]() {
+			if( idx < m_deviceCards.count() )
 			{
-				m_deviceCards[m_currentIndex].statusBadge->setText( tr("✅ تم بنجاح") );
-				m_deviceCards[m_currentIndex].statusBadge->setStyleSheet( QStringLiteral("font-weight: bold; color: #16a34a; background: #dcfce7; border-radius: 4px; padding: 4px 8px;") );
+				m_deviceCards[idx].statusBadge->setText( tr("✅ تم بنجاح") );
+				m_deviceCards[idx].statusBadge->setStyleSheet( QStringLiteral("font-weight: bold; color: #16a34a; background: #dcfce7; border-radius: 4px; padding: 4px 8px;") );
 			}
 			addLog( tr("✅ اكتملت تسمية الجهاز إلى %1 بنجاح.").arg( targetName ), QStringLiteral("#4ade80") );
-			m_currentIndex++;
-			startRenaming();
+			m_currentIndex = idx + 1;
+			(*processNext)();
 		} );
 	};
 
-	processNext();
+	(*processNext)();
 }
 
 void BatchRenameDialog::handleRenameResult( const QString& hostAddress, bool success, const QString& message )
 {
 	for( int i = 0; i < m_deviceCards.count(); ++i )
 	{
-		if( m_deviceCards[i].hostAddress == hostAddress )
+		if( m_deviceCards[i].hostAddress == hostAddress || m_deviceCards[i].computerName == hostAddress )
 		{
 			if( success )
 			{

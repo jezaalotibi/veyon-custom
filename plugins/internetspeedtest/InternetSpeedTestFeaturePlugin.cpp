@@ -147,7 +147,8 @@ bool InternetSpeedTestFeaturePlugin::handleFeatureMessage( ComputerControlInterf
 		{
 			int ping = message.argument( Argument::PingMs ).toInt();
 			double speed = message.argument( Argument::DownloadMbps ).toDouble();
-			QString host = computerControlInterface->computer().hostAddress().toString();
+			const auto& comp = computerControlInterface->computer();
+			QString host = !comp.hostAddress().isNull() ? comp.hostAddress().toString() : ( !comp.hostName().isEmpty() ? comp.hostName() : comp.displayName() );
 			m_activeDialog->updateResult( host, ping, speed );
 			return true;
 		}

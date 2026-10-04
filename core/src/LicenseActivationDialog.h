@@ -27,12 +27,15 @@ private:
 private:
 	void setupUi();
 	void updateStatusDisplay();
+	void checkLockout();
 
 	QLineEdit* m_machineIdEdit;
 	QLineEdit* m_licenseKeyEdit;
 	QLabel* m_statusLabel;
 	QLabel* m_expiryLabel;
 	QLabel* m_seatsLabel;
+	QLabel* m_lockoutWarningLabel;
 	QPushButton* m_activateButton;
 	QPushButton* m_deactivateButton;
+	class QTimer* m_lockoutTimer;
 };

@@ -15,6 +15,7 @@
 #include <QSettings>
 #include <QUrl>
 #include <QUuid>
+#include <QRegularExpression>
 
 #include <openssl/bio.h>
 #include <openssl/evp.h>
@@ -274,12 +275,120 @@ bool LicenseManager::requireActivation( QWidget* parent, const QString& featureN
 	return false;
 }
 
+int LicenseManager::failedAttempts()
+{
+	QSettings settings( QStringLiteral("Veyon"), QStringLiteral("License") );
+	return settings.value( QStringLiteral("FailedAttempts"), 0 ).toInt();
+}
+
+qint64 LicenseManager::lockoutRemainingSeconds()
+{
+	QSettings settings( QStringLiteral("Veyon"), QStringLiteral("License") );
+	qint64 lockoutUntil = settings.value( QStringLiteral("LockoutUntil"), 0 ).toLongLong();
+	qint64 lastAttempt = settings.value( QStringLiteral("LastAttemptTime"), 0 ).toLongLong();
+	qint64 now = QDateTime::currentDateTime().toSecsSinceEpoch();
+
+	// Anti-tamper: if system clock rolled back by > 30 minutes, enforce 24-hour lockout
+	if( lastAttempt > 0 && now < (lastAttempt - 1800) )
+	{
+		lockoutUntil = now + 86400;
+		settings.setValue( QStringLiteral("LockoutUntil"), lockoutUntil );
+		settings.setValue( QStringLiteral("LastAttemptTime"), now );
+		return 86400;
+	}
+
+	if( lockoutUntil > now )
+	{
+		return ( lockoutUntil - now );
+	}
+
+	return 0;
+}
+
+void LicenseManager::recordFailedAttempt()
+{
+	QSettings settings( QStringLiteral("Veyon"), QStringLiteral("License") );
+	int attempts = settings.value( QStringLiteral("FailedAttempts"), 0 ).toInt() + 1;
+	settings.setValue( QStringLiteral("FailedAttempts"), attempts );
+
+	qint64 now = QDateTime::currentDateTime().toSecsSinceEpoch();
+	settings.setValue( QStringLiteral("LastAttemptTime"), now );
+
+	// Delays policy:
+	// Attempts 1-3: 0 seconds (free attempts)
+	// Attempts 4-5: 60 seconds (1 minute delay)
+	// Attempts 6-7: 180 seconds (3 minutes delay)
+	// Attempts 8-10: 900 seconds (15 minutes delay)
+	// Attempts 11-20: 3600 seconds (1 hour delay)
+	// >20 attempts: 86400 seconds (24 hours / full day lockout)
+	qint64 delaySec = 0;
+	if( attempts >= 21 )
+	{
+		delaySec = 86400;
+	}
+	else if( attempts >= 11 )
+	{
+		delaySec = 3600;
+	}
+	else if( attempts >= 8 )
+	{
+		delaySec = 900;
+	}
+	else if( attempts >= 6 )
+	{
+		delaySec = 180;
+	}
+	else if( attempts >= 4 )
+	{
+		delaySec = 60;
+	}
+
+	if( delaySec > 0 )
+	{
+		settings.setValue( QStringLiteral("LockoutUntil"), now + delaySec );
+	}
+}
+
+void LicenseManager::resetFailedAttempts()
+{
+	QSettings settings( QStringLiteral("Veyon"), QStringLiteral("License") );
+	settings.remove( QStringLiteral("FailedAttempts") );
+	settings.remove( QStringLiteral("LockoutUntil") );
+	settings.remove( QStringLiteral("LastAttemptTime") );
+}
+
 void LicenseManager::activateOnline( const QString& licenseKey,
 									std::function<void( bool, const QString&, const VerificationResult& )> callback )
 {
+	qint64 remaining = lockoutRemainingSeconds();
+	if( remaining > 0 )
+	{
+		VerificationResult res;
+		int minutes = int( remaining / 60 );
+		int seconds = int( remaining % 60 );
+		QString timeStr;
+		if( minutes >= 60 )
+		{
+			timeStr = QStringLiteral("%1 ساعة").arg( minutes / 60 );
+		}
+		else if( minutes > 0 )
+		{
+			timeStr = QStringLiteral("%1 دقيقة و %2 ثانية").arg( minutes ).arg( seconds );
+		}
+		else
+		{
+			timeStr = QStringLiteral("%1 ثانية").arg( seconds );
+		}
+
+		res.message = QStringLiteral("تم قفل محاولات التنشيط مؤقتاً لحماية النظام بعد عدة محاولات غير صحيحة. يرجى الانتظار (%1) والمحاولة مجدداً.").arg( timeStr );
+		callback( false, res.message, res );
+		return;
+	}
+
 	QString cleanKey = licenseKey.trimmed().toUpper();
 	if( cleanKey.length() < 8 )
 	{
+		recordFailedAttempt();
 		VerificationResult res;
 		res.message = QStringLiteral("صيغة مفتاح الترخيص غير صحيحة. يرجى إدخال مفتاح ترخيص صالح.");
 		callback( false, res.message, res );
@@ -308,8 +417,10 @@ void LicenseManager::activateOnline( const QString& licenseKey,
 
 		if( reply->error() != QNetworkReply::NoError )
 		{
+			recordFailedAttempt();
 			VerificationResult res;
-			res.message = QStringLiteral("تعذر الاتصال بخادم التنشيط: ") + reply->errorString();
+			// Strict Security: NEVER expose Cloudflare Worker URL or endpoint details
+			res.message = QStringLiteral("تعذر الاتصال بخادم التنشيط. يرجى التأكد من اتصال الإنترنت ثم المحاولة مجدداً.");
 			callback( false, res.message, res );
 			return;
 		}
@@ -319,8 +430,22 @@ void LicenseManager::activateOnline( const QString& licenseKey,
 
 		if( !respObj.value( QStringLiteral("ok") ).toBool() )
 		{
+			recordFailedAttempt();
 			QString errMsg = respObj.value( QStringLiteral("error") ).toString();
-			if( errMsg.isEmpty() ) errMsg = QStringLiteral("فشل تنشيط الترخيص من الخادم.");
+			// Sanitize any URLs from server error
+			errMsg.replace( QRegularExpression( QStringLiteral("https?://[^\\s]+") ), QStringLiteral("") );
+			if( errMsg.isEmpty() || errMsg.contains( QStringLiteral("invalid"), Qt::CaseInsensitive ) || errMsg.contains( QStringLiteral("not found"), Qt::CaseInsensitive ) )
+			{
+				errMsg = QStringLiteral("مفتاح التنشيط المدخل غير صحيح أو غير مسجل في النظام.");
+			}
+			else if( errMsg.contains( QStringLiteral("expired"), Qt::CaseInsensitive ) )
+			{
+				errMsg = QStringLiteral("انتهت صلاحية هذا المفتاح.");
+			}
+			else if( errMsg.contains( QStringLiteral("limit"), Qt::CaseInsensitive ) )
+			{
+				errMsg = QStringLiteral("تم استهلاك الحد الأقصى للأجهزة المصرح بها لهذا المفتاح.");
+			}
 			VerificationResult res;
 			res.message = errMsg;
 			callback( false, errMsg, res );
@@ -329,6 +454,7 @@ void LicenseManager::activateOnline( const QString& licenseKey,
 
 		QString token = respObj.value( QStringLiteral("license") ).toString();
 		saveLicense( cleanKey, token );
+		resetFailedAttempts();
 
 		auto verifyRes = verifyLicense( token );
 		callback( true, QStringLiteral("تم تنشيط البرنامج بنجاح!"), verifyRes );
