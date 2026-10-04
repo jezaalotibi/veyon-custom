@@ -23,6 +23,10 @@
  */
 
 #include <QCoreApplication>
+#include <QFile>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QSettings>
 
 #include "ScreenLockFeaturePlugin.h"
 #include "ComputerControlInterface.h"
@@ -31,6 +35,7 @@
 #include "PlatformCoreFunctions.h"
 #include "PlatformInputDeviceFunctions.h"
 #include "PlatformSessionFunctions.h"
+#include "VeyonMasterInterface.h"
 #include "VeyonServerInterface.h"
 
 
@@ -55,7 +60,14 @@ ScreenLockFeaturePlugin::ScreenLockFeaturePlugin( QObject* parent ) :
 								   "their computers using this button. "
 								   "In this mode all input devices are locked while the desktop is still visible." ),
 							   QStringLiteral(":/screenlock/system-lock-screen.png") ),
-	m_features( { m_screenLockFeature, m_lockInputDevicesFeature } ),
+	m_changeLockImageFeature( QStringLiteral( "ChangeLockImage" ),
+							  Feature::Flag::Action | Feature::Flag::Master,
+							  Feature::Uid( "a5928f22-54b1-4796-bb31-64d858349bb8" ),
+							  {},
+							  tr( "Change lock image" ), tr( "Change lock image" ),
+							  tr( "Select a custom image from this computer to use as the lock screen wallpaper on student screens." ),
+							  QStringLiteral(":/screenlock/system-lock-screen.png") ),
+	m_features( { m_screenLockFeature, m_lockInputDevicesFeature, m_changeLockImageFeature } ),
 	m_lockWidget( nullptr )
 {
 	if (VeyonCore::component() == VeyonCore::Component::Service)
@@ -89,14 +101,23 @@ bool ScreenLockFeaturePlugin::controlFeature( Feature::Uid featureUid, Operation
 
 	if( operation == Operation::Start )
 	{
-		// never lock the master computer itself: in multi-teacher lab layouts it
-		// is listed as a regular room computer, but locking its screen would grab
-		// the teacher's keyboard and mouse and cover Veyon Master, leaving no way
-		// to unlock the running session
 		auto lockControlInterfaces = computerControlInterfaces;
 		lockControlInterfaces.removeLocalHostInterfaces();
 
-		sendFeatureMessage(FeatureMessage{featureUid, FeatureCommand::StartLock}, lockControlInterfaces);
+		FeatureMessage msg{featureUid, FeatureCommand::StartLock};
+
+		QSettings settings( QStringLiteral("Veyon"), QStringLiteral("Veyon") );
+		QString customImagePath = settings.value( QStringLiteral("CustomLockScreenImage") ).toString();
+		if( !customImagePath.isEmpty() && QFile::exists( customImagePath ) )
+		{
+			QFile imgFile( customImagePath );
+			if( imgFile.open( QIODevice::ReadOnly ) )
+			{
+				msg.addArgument( argToString(Argument::CustomImageData), imgFile.readAll() );
+			}
+		}
+
+		sendFeatureMessage( msg, lockControlInterfaces );
 
 		return true;
 	}
@@ -109,6 +130,50 @@ bool ScreenLockFeaturePlugin::controlFeature( Feature::Uid featureUid, Operation
 	}
 
 	return false;
+}
+
+
+
+bool ScreenLockFeaturePlugin::startFeature( VeyonMasterInterface& master,
+										   const Feature& feature,
+										   const ComputerControlInterfaceList& computerControlInterfaces )
+{
+	if( feature.uid() == m_changeLockImageFeature.uid() )
+	{
+		QSettings settings( QStringLiteral("Veyon"), QStringLiteral("Veyon") );
+		QString current = settings.value( QStringLiteral("CustomLockScreenImage") ).toString();
+		QString title = tr( "Select Lock Screen Image" );
+
+		if( !current.isEmpty() )
+		{
+			auto reply = QMessageBox::question( master.mainWindow(), title,
+												tr("A custom lock screen image is currently set:\n%1\n\nDo you want to choose a new image? (Click 'No' to restore the default image)").arg( current ),
+												QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel );
+			if( reply == QMessageBox::No )
+			{
+				settings.remove( QStringLiteral("CustomLockScreenImage") );
+				QMessageBox::information( master.mainWindow(), title, tr("Restored default lock screen image.") );
+				return true;
+			}
+			if( reply == QMessageBox::Cancel )
+			{
+				return true;
+			}
+		}
+
+		QString file = QFileDialog::getOpenFileName( master.mainWindow(),
+													 title,
+													 QString(),
+													 tr("Images (*.png *.jpg *.jpeg *.bmp);;All Files (*.*)") );
+		if( !file.isEmpty() )
+		{
+			settings.setValue( QStringLiteral("CustomLockScreenImage"), file );
+			QMessageBox::information( master.mainWindow(), title, tr("Custom lock screen image set successfully!") );
+		}
+		return true;
+	}
+
+	return FeatureProviderInterface::startFeature( master, feature, computerControlInterfaces );
 }
 
 
@@ -167,8 +232,19 @@ bool ScreenLockFeaturePlugin::handleFeatureMessage( VeyonWorkerInterface& worker
 					mode = LockWidget::DesktopVisible;
 				}
 
-				m_lockWidget = new LockWidget( mode,
-											   QPixmap( QStringLiteral(":/screenlock/locked-screen-background.png" ) ) );
+				QPixmap lockPix;
+				const auto customData = message.argument( argToString(Argument::CustomImageData) ).toByteArray();
+				if( !customData.isEmpty() )
+				{
+					lockPix.loadFromData( customData );
+				}
+
+				if( lockPix.isNull() )
+				{
+					lockPix = QPixmap( QStringLiteral(":/screenlock/locked-screen-background.png" ) );
+				}
+
+				m_lockWidget = new LockWidget( mode, lockPix );
 			}
 			return true;
 

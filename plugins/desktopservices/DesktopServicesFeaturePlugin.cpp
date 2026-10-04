@@ -446,10 +446,13 @@ bool DesktopServicesFeaturePlugin::openWebsite( const QString& urlString, bool l
 			browser = edgeReg.value( QStringLiteral(".") ).toString();
 		}
 
+		QString kioskDataDir = QDir::toNativeSeparators( QDir::tempPath() + QStringLiteral("/veyon_kiosk_exam") );
 		const QStringList kioskArgs = {
+			QStringLiteral("--new-window"),
 			QStringLiteral("--kiosk"),
 			url.toString(),
 			QStringLiteral("--edge-kiosk-type=fullscreen"),
+			QStringLiteral("--user-data-dir=") + kioskDataDir,
 			QStringLiteral("--no-first-run"),
 			QStringLiteral("--disable-pinch"),
 			QStringLiteral("--overscroll-history-navigation=0")
@@ -462,8 +465,10 @@ bool DesktopServicesFeaturePlugin::openWebsite( const QString& urlString, bool l
 
 		if( QProcess::startDetached( QStringLiteral("cmd.exe"),
 									 { QStringLiteral("/c"), QStringLiteral("start"),
-									   QStringLiteral("msedge"), QStringLiteral("--kiosk"),
-									   url.toString(), QStringLiteral("--edge-kiosk-type=fullscreen") } ) )
+									   QStringLiteral("msedge"), QStringLiteral("--new-window"),
+									   QStringLiteral("--kiosk"), url.toString(),
+									   QStringLiteral("--edge-kiosk-type=fullscreen"),
+									   QStringLiteral("--user-data-dir=") + kioskDataDir } ) )
 		{
 			return true;
 		}

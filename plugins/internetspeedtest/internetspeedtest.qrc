@@ -1,0 +1,5 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/internetspeedtest">
+	<file>speedtest.png</file>
+</qresource>
+</RCC>

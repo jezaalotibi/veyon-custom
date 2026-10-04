@@ -4051,6 +4051,40 @@ Please save your work and close all programs.</source>
         <source>Lock screen and input devices of a computer</source>
         <translation>قفل شاشة الكمبيوتر وأجهزة الإدخال الخاصة به</translation>
     </message>
+    <message>
+        <source>Change lock image</source>
+        <translation>تغيير صورة القفل</translation>
+    </message>
+    <message>
+        <source>Select a custom image from this computer to use as the lock screen wallpaper on student screens.</source>
+        <translation>اختر صورة مخصصة من هذا الجهاز لاستخدامها كخلفية لشاشة القفل على أجهزة الطلاب.</translation>
+    </message>
+    <message>
+        <source>Select Lock Screen Image</source>
+        <translation>اختيار صورة شاشة القفل</translation>
+    </message>
+    <message>
+        <source>A custom lock screen image is currently set:
+%1
+
+Do you want to choose a new image? (Click 'No' to restore the default image)</source>
+        <translation>صورة القفل المخصصة محددة حالياً:
+%1
+
+هل ترغب في اختيار صورة جديدة؟ (اضغط 'لا' لاستعادة الصورة الافتراضية)</translation>
+    </message>
+    <message>
+        <source>Restored default lock screen image.</source>
+        <translation>تمت استعادة صورة القفل الافتراضية.</translation>
+    </message>
+    <message>
+        <source>Images (*.png *.jpg *.jpeg *.bmp);;All Files (*.*)</source>
+        <translation>الصور (*.png *.jpg *.jpeg *.bmp);;جميع الملفات (*.*)</translation>
+    </message>
+    <message>
+        <source>Custom lock screen image set successfully!</source>
+        <translation>تم تعيين صورة القفل المخصصة بنجاح!</translation>
+    </message>
 </context>
 <context>
     <name>Screenshot</name>
@@ -5085,6 +5119,256 @@ Example: [^-]*-(PC[0-9]*)</source>
     <message>
         <source>Record screens of selected computers</source>
         <translation>تسجيل شاشات الأجهزة المحددة</translation>
+    </message>
+</context>
+<context>
+    <name>InternetSpeedTestFeaturePlugin</name>
+    <message>
+        <source>Speed Test</source>
+        <translation>فحص السرعة</translation>
+    </message>
+    <message>
+        <source>Internet Speed Test</source>
+        <translation>اختبار سرعة الإنترنت</translation>
+    </message>
+    <message>
+        <source>InternetSpeedTest</source>
+        <translation>اختبار سرعة الإنترنت</translation>
+    </message>
+    <message>
+        <source>Test internet download speed and ping latency on student computers</source>
+        <translation>فحص سرعة تحميل الإنترنت وزمن الاستجابة على أجهزة الطلاب</translation>
+    </message>
+    <message>
+        <source>Test internet download speed and ping latency on student computers.</source>
+        <translation>فحص سرعة تحميل الإنترنت وزمن الاستجابة على أجهزة الطلاب.</translation>
+    </message>
+</context>
+<context>
+    <name>InternetSpeedTestDialog</name>
+    <message>
+        <source>Internet Speed Test - فحص سرعة الإنترنت</source>
+        <translation>اختبار سرعة الإنترنت للأجهزة</translation>
+    </message>
+    <message>
+        <source>&lt;h2&gt;⚡ اختبار سرعة الإنترنت للأجهزة (Internet Speed Test)&lt;/h2&gt;&lt;p style='color:gray;'&gt;قم بفحص أداء الإنترنت على أجهزة الطلاب ومراقبة زمن الاستجابة والسرعة في المعمل.&lt;/p&gt;</source>
+        <translation>&lt;h2&gt;⚡ اختبار سرعة الإنترنت للأجهزة (Internet Speed Test)&lt;/h2&gt;&lt;p style='color:gray;'&gt;قم بفحص أداء الإنترنت على أجهزة الطلاب ومراقبة زمن الاستجابة والسرعة في المعمل.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>متوسط سرعة التنزيل بالمعمل</source>
+        <translation>متوسط سرعة التنزيل بالمعمل</translation>
+    </message>
+    <message>
+        <source>متوسط زمن الاستجابة (Ping)</source>
+        <translation>متوسط زمن الاستجابة (Ping)</translation>
+    </message>
+    <message>
+        <source>أبطأ جهاز بالشبكة حالياً</source>
+        <translation>أبطأ جهاز بالشبكة حالياً</translation>
+    </message>
+    <message>
+        <source>اسم الجهاز</source>
+        <translation>اسم الجهاز</translation>
+    </message>
+    <message>
+        <source>عنوان IP</source>
+        <translation>عنوان IP</translation>
+    </message>
+    <message>
+        <source>زمن الاستجابة (Ping)</source>
+        <translation>زمن الاستجابة (Ping)</translation>
+    </message>
+    <message>
+        <source>سرعة التنزيل (Download)</source>
+        <translation>سرعة التنزيل (Download)</translation>
+    </message>
+    <message>
+        <source>الحالة</source>
+        <translation>الحالة</translation>
+    </message>
+    <message>
+        <source>جاهز للفحص</source>
+        <translation>جاهز للفحص</translation>
+    </message>
+    <message>
+        <source>🚀 بدء الفحص الشامل للكل</source>
+        <translation>🚀 بدء الفحص الشامل للكل</translation>
+    </message>
+    <message>
+        <source>📄 تصدير التقرير (CSV)</source>
+        <translation>📄 تصدير التقرير (CSV)</translation>
+    </message>
+    <message>
+        <source>إغلاق</source>
+        <translation>إغلاق</translation>
+    </message>
+    <message>
+        <source>⏳ جاري الفحص...</source>
+        <translation>⏳ جاري الفحص...</translation>
+    </message>
+    <message>
+        <source>جاري القياس...</source>
+        <translation>جاري القياس...</translation>
+    </message>
+    <message>
+        <source>قيد الاختبار</source>
+        <translation>قيد الاختبار</translation>
+    </message>
+    <message>
+        <source>ممتاز ✓</source>
+        <translation>ممتاز ✓</translation>
+    </message>
+    <message>
+        <source>جيد</source>
+        <translation>جيد</translation>
+    </message>
+    <message>
+        <source>ضعيف ⚠</source>
+        <translation>ضعيف ⚠</translation>
+    </message>
+    <message>
+        <source>حفظ تقرير سرعة الإنترنت</source>
+        <translation>حفظ تقرير سرعة الإنترنت</translation>
+    </message>
+    <message>
+        <source>ملفات CSV (*.csv)</source>
+        <translation>ملفات CSV (*.csv)</translation>
+    </message>
+    <message>
+        <source>تصدير التقرير</source>
+        <translation>تصدير التقرير</translation>
+    </message>
+    <message>
+        <source>تم تصدير التقرير بنجاح!</source>
+        <translation>تم تصدير التقرير بنجاح!</translation>
+    </message>
+</context>
+<context>
+    <name>QuizPlatformFeaturePlugin</name>
+    <message>
+        <source>Quizzes &amp; Activities</source>
+        <translation>الاختبارات والأنشطة</translation>
+    </message>
+    <message>
+        <source>QuizPlatform</source>
+        <translation>منصة الاختبارات والأنشطة</translation>
+    </message>
+    <message>
+        <source>Interactive quiz platform and exam activities for students</source>
+        <translation>منصة تفاعلية للاختبارات والأنشطة للطلاب</translation>
+    </message>
+    <message>
+        <source>Create and dispatch interactive quizzes and exams to students with full lockdown security.</source>
+        <translation>إنشاء وإرسال اختبارات وأنشطة تفاعلية للطلاب مع حماية كاملة ومنع الخروج.</translation>
+    </message>
+</context>
+<context>
+    <name>QuizPlatformDialog</name>
+    <message>
+        <source>منصة الاختبارات والأنشطة الذكية - Quiz Platform</source>
+        <translation>منصة الاختبارات والأنشطة الذكية</translation>
+    </message>
+    <message>
+        <source>&lt;h2&gt;📝 منصة الاختبارات والأنشطة الذكية (Quiz Platform)&lt;/h2&gt;&lt;p style='color:gray;'&gt;قم بإرسال اختبارات وروابط الأنشطة التفاعلية لأجهزة الطلاب مع حماية كاملة ومنع الخروج.&lt;/p&gt;</source>
+        <translation>&lt;h2&gt;📝 منصة الاختبارات والأنشطة الذكية (Quiz Platform)&lt;/h2&gt;&lt;p style='color:gray;'&gt;قم بإرسال اختبارات وروابط الأنشطة التفاعلية لأجهزة الطلاب مع حماية كاملة ومنع الخروج.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>بيانات الاختبار والنشاط</source>
+        <translation>بيانات الاختبار والنشاط</translation>
+    </message>
+    <message>
+        <source>مثال: اختبار الوحدة الأولى / نشاط برمجة بايثون</source>
+        <translation>مثال: اختبار الوحدة الأولى / نشاط برمجة بايثون</translation>
+    </message>
+    <message>
+        <source>عنوان الاختبار / الموضوع:</source>
+        <translation>عنوان الاختبار / الموضوع:</translation>
+    </message>
+    <message>
+        <source>https://forms.microsoft.com/... أو رابط منصة مدرستي أو كويز</source>
+        <translation>https://forms.microsoft.com/... أو رابط منصة مدرستي أو كويز</translation>
+    </message>
+    <message>
+        <source>رابط الاختبار (URL):</source>
+        <translation>رابط الاختبار (URL):</translation>
+    </message>
+    <message>
+        <source>الوقت المتاح للإجابة:</source>
+        <translation>الوقت المتاح للإجابة:</translation>
+    </message>
+    <message>
+        <source>5 دقائق</source>
+        <translation>5 دقائق</translation>
+    </message>
+    <message>
+        <source>10 دقائق</source>
+        <translation>10 دقائق</translation>
+    </message>
+    <message>
+        <source>15 دقيقة</source>
+        <translation>15 دقيقة</translation>
+    </message>
+    <message>
+        <source>30 دقيقة</source>
+        <translation>30 دقيقة</translation>
+    </message>
+    <message>
+        <source>45 دقيقة</source>
+        <translation>45 دقيقة</translation>
+    </message>
+    <message>
+        <source>غير محدد (مفتوح)</source>
+        <translation>غير محدد (مفتوح)</translation>
+    </message>
+    <message>
+        <source>الأمان والتصفح الآمن المقيد (Lockdown Controls)</source>
+        <translation>الأمان والتصفح الآمن المقيد (Lockdown Controls)</translation>
+    </message>
+    <message>
+        <source>🔒 تشغيل وضع التصفح الآمن (ملء الشاشة مع منع الخروج وحظر مفاتيح الهروب)</source>
+        <translation>🔒 تشغيل وضع التصفح الآمن (ملء الشاشة مع منع الخروج وحظر مفاتيح الهروب)</translation>
+    </message>
+    <message>
+        <source>🛡️ حظر تصفح أي مواقع أخرى عدا هذا الاختبار طوال فترة الجلسة</source>
+        <translation>🛡️ حظر تصفح أي مواقع أخرى عدا هذا الاختبار طوال فترة الجلسة</translation>
+    </message>
+    <message>
+        <source>✓ عرض النتيجة والدرجة تلقائياً للطلاب بعد التسليم</source>
+        <translation>✓ عرض النتيجة والدرجة تلقائياً للطلاب بعد التسليم</translation>
+    </message>
+    <message>
+        <source>تنبيهات الغش والخصوصية الرقمية (Lockdown Alerts)</source>
+        <translation>تنبيهات الغش والخصوصية الرقمية (Lockdown Alerts)</translation>
+    </message>
+    <message>
+        <source>✓ سيتم تقييد أجهزة الطلاب في وضع ملء الشاشة.
+✓ يتم منع استخدام اختصارات لوحة المفاتيح والتبديل بين النوافذ حتى انتهاء الاختبار.</source>
+        <translation>✓ سيتم تقييد أجهزة الطلاب في وضع ملء الشاشة.
+✓ يتم منع استخدام اختصارات لوحة المفاتيح والتبديل بين النوافذ حتى انتهاء الاختبار.</translation>
+    </message>
+    <message>
+        <source>🚀 إرسال وبدء جلسة الاختبار للطلاب</source>
+        <translation>🚀 إرسال وبدء جلسة الاختبار للطلاب</translation>
+    </message>
+    <message>
+        <source>إلغاء</source>
+        <translation>إلغاء</translation>
+    </message>
+    <message>
+        <source>رابط غير صحيح</source>
+        <translation>رابط غير صحيح</translation>
+    </message>
+    <message>
+        <source>يرجى إدخال رابط الاختبار أو النشاط أولاً.</source>
+        <translation>يرجى إدخال رابط الاختبار أو النشاط أولاً.</translation>
+    </message>
+    <message>
+        <source>تم إرسال الاختبار</source>
+        <translation>تم إرسال الاختبار</translation>
+    </message>
+    <message>
+        <source>تم إرسال الاختبار بنجاح إلى %1 جهاز طالب!</source>
+        <translation>تم إرسال الاختبار بنجاح إلى %1 جهاز طالب!</translation>
     </message>
 </context>
 </TS>

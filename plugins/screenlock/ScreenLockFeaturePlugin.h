@@ -75,6 +75,10 @@ public:
 	bool controlFeature( Feature::Uid featureUid, Operation operation, const QVariantMap& arguments,
 						const ComputerControlInterfaceList& computerControlInterfaces ) override;
 
+	bool startFeature( VeyonMasterInterface& master,
+					   const Feature& feature,
+					   const ComputerControlInterfaceList& computerControlInterfaces ) override;
+
 	bool handleFeatureMessage( VeyonServerInterface& server,
 							   const MessageContext& messageContext,
 							   const FeatureMessage& message ) override;
@@ -88,8 +92,14 @@ private:
 		StopLock
 	};
 
+	enum class Argument
+	{
+		CustomImageData
+	};
+
 	const Feature m_screenLockFeature;
 	const Feature m_lockInputDevicesFeature;
+	const Feature m_changeLockImageFeature;
 	const FeatureList m_features;
 
 	LockWidget* m_lockWidget;
