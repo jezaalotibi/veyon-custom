@@ -411,6 +411,20 @@ void MainWindow::closeEvent( QCloseEvent* event )
 	m_master.userConfig().setWindowGeometry( QString::fromLatin1( saveGeometry().toBase64() ) );
 
 	QMainWindow::closeEvent( event );
+
+	if( event->isAccepted() )
+	{
+		const auto topLevelWidgets = QApplication::topLevelWidgets();
+		for( auto* widget : topLevelWidgets )
+		{
+			if( widget != this )
+			{
+				widget->close();
+			}
+		}
+
+		QApplication::quit();
+	}
 }
 
 

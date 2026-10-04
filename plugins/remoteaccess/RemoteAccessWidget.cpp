@@ -301,7 +301,9 @@ void RemoteAccessWidgetToolBar::updateScreens()
 
 RemoteAccessWidget::RemoteAccessWidget( const ComputerControlInterface::Pointer& computerControlInterface,
 										bool startViewOnly, bool showViewOnlyToggleButton ) :
-	QWidget( nullptr ),
+	QWidget( VeyonCore::instance()->findChild<VeyonMasterInterface *>() ?
+			 VeyonCore::instance()->findChild<VeyonMasterInterface *>()->mainWindow() : nullptr,
+			 Qt::Window ),
 	m_computerControlInterface( computerControlInterface ),
 	m_vncView( new VncViewWidget( computerControlInterface, {}, this ) ),
 	m_toolBar( new RemoteAccessWidgetToolBar( this, startViewOnly, showViewOnlyToggleButton ) )

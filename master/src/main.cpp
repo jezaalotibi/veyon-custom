@@ -23,11 +23,16 @@
  */
 
 #include <QApplication>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QSplashScreen>
 
 #include "DocumentationFigureCreator.h"
 #include "VeyonMaster.h"
 #include "MainWindow.h"
+#include "PlatformCoreFunctions.h"
+#include "PlatformPluginInterface.h"
+#include "PlatformSessionFunctions.h"
 
 
 int main( int argc, char** argv )
@@ -38,6 +43,24 @@ int main( int argc, char** argv )
 	app.connect( &app, &QApplication::lastWindowClosed, &QApplication::quit );
 
 	VeyonCore core( &app, VeyonCore::Component::Master, QStringLiteral("Master") );
+
+	const auto sessionId = VeyonCore::platform().sessionFunctions().currentSessionId();
+	const QString serverName = QStringLiteral("VeyonMaster_SingleInstance_%1")
+								.arg( sessionId >= 0 ? sessionId : 0 );
+
+	QLocalSocket socket;
+	socket.connectToServer( serverName );
+	if( socket.waitForConnected( 800 ) )
+	{
+		socket.write( "ACTIVATE\n" );
+		socket.waitForBytesWritten( 800 );
+		socket.disconnectFromServer();
+		return 0;
+	}
+
+	QLocalServer::removeServer( serverName );
+	auto localServer = new QLocalServer( &app );
+	localServer->listen( serverName );
 
 #ifdef VEYON_DEBUG
 	if( qEnvironmentVariableIsSet( "VEYON_MASTER_CREATE_DOC_FIGURES") )
@@ -57,11 +80,35 @@ int main( int argc, char** argv )
 	}
 
 	VeyonMaster masterCore( &core );
+	auto mainWindow = masterCore.mainWindow();
+
+	QObject::connect( localServer, &QLocalServer::newConnection, [localServer, mainWindow]() {
+		auto clientSocket = localServer->nextPendingConnection();
+		if( clientSocket )
+		{
+			QObject::connect( clientSocket, &QLocalSocket::readyRead, [clientSocket, mainWindow]() {
+				const auto data = clientSocket->readAll();
+				if( data.contains( "ACTIVATE" ) && mainWindow )
+				{
+					if( mainWindow->isMinimized() )
+					{
+						mainWindow->showNormal();
+					}
+					mainWindow->show();
+					mainWindow->raise();
+					mainWindow->activateWindow();
+					VeyonCore::platform().coreFunctions().raiseWindow( mainWindow, false );
+				}
+			} );
+			QObject::connect( clientSocket, &QLocalSocket::disconnected, clientSocket, &QLocalSocket::deleteLater );
+		}
+	} );
 
 	// hide splash-screen as soon as main-window is shown
-	splashScreen.finish( masterCore.mainWindow() );
+	splashScreen.finish( mainWindow );
 
-	masterCore.mainWindow()->show();
+	mainWindow->show();
 
 	return core.exec();
 }
+
