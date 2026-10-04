@@ -107,15 +107,32 @@ cp -f ../README.md "${INSTALL_DIR}/README.TXT" 2>/dev/null || true
 unix2dos "${INSTALL_DIR}"/*.TXT 2>/dev/null || true
 
 # Copy NSIS scripts and resources
-cp -ra ../nsis "${INSTALL_DIR}/"
+mkdir -p "${INSTALL_DIR}/nsis"
+cp -rf ../nsis/* "${INSTALL_DIR}/nsis/" 2>/dev/null || true
+cp -rf ../nsis/* "${INSTALL_DIR}/" 2>/dev/null || true
 cp -f nsis/veyon.nsi "${INSTALL_DIR}/"
+
+# Ensure Windows backslashes in NSIS script paths
+sed -i 's,nsis/welcome-page.bmp,nsis\\welcome-page.bmp,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,nsis/installer.ico,nsis\\installer.ico,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,nsis/uninstaller.ico,nsis\\uninstaller.ico,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,nsis/header.bmp,nsis\\header.bmp,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,plugins/\*\.dll,plugins\\*.dll,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,translations/\*\.qm,translations\\*.qm,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,crypto/\*\.dll,crypto\\*.dll,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,imageformats/qjpeg.dll,imageformats\\qjpeg.dll,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,platforms/qwindows.dll,platforms\\qwindows.dll,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,styles/\*\.dll,styles\\*.dll,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,tls/qopensslbackend.dll,tls\\qopensslbackend.dll,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,interception/\*,interception\\*,g' "${INSTALL_DIR}/veyon.nsi"
 
 echo "=== Files prepared in ${INSTALL_DIR} ==="
 ls -la "${INSTALL_DIR}"
+ls -la "${INSTALL_DIR}/nsis"
 
 echo "=== Running makensis inside ${INSTALL_DIR} ==="
 cd "${INSTALL_DIR}"
-makensis veyon.nsi
+makensis /V3 veyon.nsi
 
 echo "=== Moving installer executable ==="
 mv -f veyon-*setup.exe .. 2>/dev/null || true
