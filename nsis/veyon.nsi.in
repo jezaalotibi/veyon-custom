@@ -177,18 +177,20 @@ SetOutPath "$INSTDIR\translations"
 File "translations\*.qm"
 # QCA plugins
 SetOutPath "$INSTDIR\crypto"
-File "crypto\*.dll"
+File /nonfatal "crypto\*.dll"
 # Qt image format plugin
 SetOutPath "$INSTDIR\imageformats"
-File "imageformats\qjpeg.dll"
+File /nonfatal "imageformats\*.dll"
+File /nonfatal "imageformats\qjpeg.dll"
 # Qt platform plugin
 SetOutPath "$INSTDIR\platforms"
 File "platforms\qwindows.dll"
 SetOutPath "$INSTDIR\styles"
-File "styles\*.dll"
+File /nonfatal "styles\*.dll"
 # Qt TLS backend
 SetOutPath "$INSTDIR\tls"
-File "tls\qopensslbackend.dll"
+File /nonfatal "tls\*.dll"
+File /nonfatal "tls\qopensslbackend.dll"
 # configuration
 ExecWait '"$INSTDIR\veyon-wcli.exe" service register'
 ExecWait '"$INSTDIR\veyon-wcli.exe" config set Network/FirewallExceptionEnabled 1'
@@ -224,7 +226,7 @@ SectionEnd
 Section "Interception driver" SEC_INTERCEPTION
 ${INSTALL_TYPE}
 SetOutPath "$INSTDIR\interception"
-File "interception\*"
+File /nonfatal "interception\*"
 SectionEnd
 
 Function RunConfigurator

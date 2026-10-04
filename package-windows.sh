@@ -51,10 +51,13 @@ cp -f ${MINGW_PREFIX}/bin/libssp*.dll "${INSTALL_DIR}/" 2>/dev/null || true
 
 # Copy crypto plugins
 mkdir -p "${INSTALL_DIR}/crypto"
+cp -f ${MINGW_PREFIX}/share/qt6/plugins/crypto/*.dll "${INSTALL_DIR}/crypto/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/lib/qt6/plugins/crypto/*.dll "${INSTALL_DIR}/crypto/" 2>/dev/null || true
+cp -f ${MINGW_PREFIX}/plugins/crypto/*.dll "${INSTALL_DIR}/crypto/" 2>/dev/null || true
 cp -f ${MINGW_PREFIX}/lib/qca-qt6/crypto/*.dll "${INSTALL_DIR}/crypto/" 2>/dev/null || true
 cp -f ${MINGW_PREFIX}/bin/qca-qt6/crypto/*.dll "${INSTALL_DIR}/crypto/" 2>/dev/null || true
 cp -f ${MINGW_PREFIX}/share/qca-qt6/crypto/*.dll "${INSTALL_DIR}/crypto/" 2>/dev/null || true
-find ${MINGW_PREFIX} -path "*/qca-qt6/crypto/*.dll" -exec cp -f '{}' "${INSTALL_DIR}/crypto/" \; 2>/dev/null || true
+find ${MINGW_PREFIX} -path "*/crypto/*.dll" -exec cp -f '{}' "${INSTALL_DIR}/crypto/" \; 2>/dev/null || true
 
 # Copy Qt6 core DLLs
 cp -f ${MINGW_PREFIX}/bin/Qt6Core.dll \
@@ -120,11 +123,13 @@ sed -i 's,nsis/header.bmp,nsis\\header.bmp,g' "${INSTALL_DIR}/veyon.nsi"
 sed -i 's,plugins/\*\.dll,plugins\\*.dll,g' "${INSTALL_DIR}/veyon.nsi"
 sed -i 's,translations/\*\.qm,translations\\*.qm,g' "${INSTALL_DIR}/veyon.nsi"
 sed -i 's,crypto/\*\.dll,crypto\\*.dll,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,File "crypto\\*.dll",File /nonfatal "crypto\\*.dll",g' "${INSTALL_DIR}/veyon.nsi"
 sed -i 's,imageformats/qjpeg.dll,imageformats\\qjpeg.dll,g' "${INSTALL_DIR}/veyon.nsi"
 sed -i 's,platforms/qwindows.dll,platforms\\qwindows.dll,g' "${INSTALL_DIR}/veyon.nsi"
 sed -i 's,styles/\*\.dll,styles\\*.dll,g' "${INSTALL_DIR}/veyon.nsi"
 sed -i 's,tls/qopensslbackend.dll,tls\\qopensslbackend.dll,g' "${INSTALL_DIR}/veyon.nsi"
 sed -i 's,interception/\*,interception\\*,g' "${INSTALL_DIR}/veyon.nsi"
+sed -i 's,File "interception\\*",File /nonfatal "interception\\*",g' "${INSTALL_DIR}/veyon.nsi"
 
 echo "=== Files prepared in ${INSTALL_DIR} ==="
 ls -la "${INSTALL_DIR}"
