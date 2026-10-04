@@ -132,7 +132,7 @@ ls -la "${INSTALL_DIR}/nsis"
 
 echo "=== Running makensis inside ${INSTALL_DIR} ==="
 cd "${INSTALL_DIR}"
-makensis /V3 veyon.nsi
+makensis veyon.nsi
 
 echo "=== Moving installer executable ==="
 mv -f veyon-*setup.exe .. 2>/dev/null || true
