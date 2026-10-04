@@ -28,6 +28,8 @@ mv -f "${INSTALL_DIR}/plugins/vnchooks.dll" "${INSTALL_DIR}/" 2>/dev/null || tru
 # Copy translations
 mkdir -p "${INSTALL_DIR}/translations"
 cp -f translations/*.qm "${INSTALL_DIR}/translations/" 2>/dev/null || true
+cp -f "${INSTALL_DIR}/translations/veyon_ar.qm" "${INSTALL_DIR}/translations/veyon_ar_EG.qm" 2>/dev/null || true
+cp -f "${INSTALL_DIR}/translations/veyon_ar.qm" "${INSTALL_DIR}/translations/veyon_ar_SA.qm" 2>/dev/null || true
 
 # Copy runtime DLLs from MinGW
 cp -f ${MINGW_PREFIX}/bin/libjpeg*.dll "${INSTALL_DIR}/" 2>/dev/null || true

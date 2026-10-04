@@ -59,13 +59,20 @@ bool TranslationLoader::load( const QString& resourceName )
 		auto translator = new QTranslator( VeyonCore::instance() );
 		translator->setObjectName( resourceName );
 
+		const auto langCode = configuredLocale.name().section( QLatin1Char('_'), 0, 0 );
+
 		if( configuredLocale == QLocale::C ||
-			translator->load( QStringLiteral( "%1_%2.qm" ).arg( resourceName, configuredLocale.name() ),
-							  translationsDirectory ) == false )
+			( translator->load( QStringLiteral( "%1_%2.qm" ).arg( resourceName, configuredLocale.name() ),
+							    translationsDirectory ) == false &&
+			  translator->load( QStringLiteral( "%1_%2.qm" ).arg( resourceName, langCode ),
+							    translationsDirectory ) == false ) )
 		{
 			configuredLocale = QLocale::system(); // Flawfinder: ignore
+			const auto sysLangCode = configuredLocale.name().section( QLatin1Char('_'), 0, 0 );
 
 			if( translator->load( QStringLiteral( "%1_%2.qm" ).arg( resourceName, configuredLocale.name() ),
+								  translationsDirectory ) == false &&
+				translator->load( QStringLiteral( "%1_%2.qm" ).arg( resourceName, sysLangCode ),
 								  translationsDirectory ) == false )
 			{
 				delete translator;
