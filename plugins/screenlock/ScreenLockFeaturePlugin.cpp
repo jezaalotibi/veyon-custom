@@ -29,6 +29,7 @@
 #include <QSettings>
 
 #include "ScreenLockFeaturePlugin.h"
+#include "LicenseManager.h"
 #include "ComputerControlInterface.h"
 #include "FeatureWorkerManager.h"
 #include "LockWidget.h"
@@ -140,6 +141,11 @@ bool ScreenLockFeaturePlugin::startFeature( VeyonMasterInterface& master,
 {
 	if( feature.uid() == m_changeLockImageFeature.uid() )
 	{
+		if( !LicenseManager::requireActivation( master.mainWindow(), tr("تخصيص صورة شاشة القفل") ) )
+		{
+			return false;
+		}
+
 		QSettings settings( QStringLiteral("Veyon"), QStringLiteral("Veyon") );
 		QString current = settings.value( QStringLiteral("CustomLockScreenImage") ).toString();
 		QString title = tr( "Select Lock Screen Image" );

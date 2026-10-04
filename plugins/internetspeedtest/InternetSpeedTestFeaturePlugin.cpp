@@ -12,6 +12,7 @@
 
 #include "InternetSpeedTestFeaturePlugin.h"
 #include "InternetSpeedTestDialog.h"
+#include "LicenseManager.h"
 #include "ComputerControlInterface.h"
 #include "VeyonMasterInterface.h"
 #include "VeyonServerInterface.h"
@@ -47,6 +48,11 @@ bool InternetSpeedTestFeaturePlugin::startFeature( VeyonMasterInterface& master,
 {
 	if( feature.uid() == m_speedTestFeature.uid() )
 	{
+		if( !LicenseManager::requireActivation( master.mainWindow(), tr("اختبار سرعة الإنترنت للأجهزة") ) )
+		{
+			return false;
+		}
+
 		auto dialog = new InternetSpeedTestDialog( *this, computerControlInterfaces, master.mainWindow() );
 		m_activeDialog = dialog;
 		dialog->setAttribute( Qt::WA_DeleteOnClose );

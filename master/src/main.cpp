@@ -33,6 +33,7 @@
 #include "PlatformCoreFunctions.h"
 #include "PlatformPluginInterface.h"
 #include "PlatformSessionFunctions.h"
+#include "ThemeManager.h"
 
 
 int main( int argc, char** argv )
@@ -106,6 +107,8 @@ int main( int argc, char** argv )
 
 	// hide splash-screen as soon as main-window is shown
 	splashScreen.finish( mainWindow );
+
+	ThemeManager::applyCurrentTheme();
 
 	mainWindow->show();
 

@@ -12,6 +12,7 @@
 
 #include "QuizPlatformFeaturePlugin.h"
 #include "QuizPlatformDialog.h"
+#include "LicenseManager.h"
 #include "ComputerControlInterface.h"
 #include "FeatureWorkerManager.h"
 #include "PlatformCoreFunctions.h"
@@ -49,6 +50,11 @@ bool QuizPlatformFeaturePlugin::startFeature( VeyonMasterInterface& master,
 {
 	if( feature.uid() == m_quizFeature.uid() )
 	{
+		if( !LicenseManager::requireActivation( master.mainWindow(), tr("منصة الاختبارات والأنشطة الذكية") ) )
+		{
+			return false;
+		}
+
 		auto dialog = new QuizPlatformDialog( *this, computerControlInterfaces, master.mainWindow() );
 		dialog->setAttribute( Qt::WA_DeleteOnClose );
 		dialog->show();

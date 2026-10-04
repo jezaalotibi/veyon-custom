@@ -34,7 +34,7 @@ public:
 
 	QString description() const override
 	{
-		return tr( "Cloud online license activation and entitlement system" );
+		return tr( "Cloud online license activation, themes, and entitlement system" );
 	}
 
 	QString vendor() const override
@@ -65,5 +65,6 @@ public:
 
 private:
 	const Feature m_licensingFeature;
+	const Feature m_themeFeature;
 	const FeatureList m_features;
 };

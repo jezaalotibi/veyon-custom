@@ -4,21 +4,24 @@
 
 #pragma once
 
+#include "VeyonCore.h"
+
 #include <QDialog>
-#include <QLineEdit>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 
-class LicenseActivationDialog : public QDialog
+class VEYON_CORE_EXPORT LicenseActivationDialog : public QDialog
 {
 	Q_OBJECT
 public:
 	explicit LicenseActivationDialog( QWidget* parent = nullptr );
 	~LicenseActivationDialog() override = default;
 
-private Q_SLOTS:
-	void copyMachineId();
+private slots:
 	void performOnlineActivation();
+	void copyMachineId();
+	void openWhatsApp();
 	void deactiveLicense();
 
 private:

@@ -625,3 +625,13 @@ void MainWindow::saveComputerPositions()
 		}
 	}
 }
+
+
+
+void MainWindow::closeEvent( QCloseEvent* event )
+{
+	QMainWindow::closeEvent( event );
+	qApp->closeAllWindows();
+	qApp->quit();
+}
+

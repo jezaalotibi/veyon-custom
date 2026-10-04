@@ -4,11 +4,15 @@
 
 #pragma once
 
+#include "VeyonCore.h"
+
 #include <QString>
 #include <QJsonObject>
 #include <functional>
 
-class LicenseManager
+class QWidget;
+
+class VEYON_CORE_EXPORT LicenseManager
 {
 public:
 	static QString getMachineId();
@@ -23,10 +27,13 @@ public:
 		QString message;
 		QString expiryDate;
 		int studentLimit{ 0 };
+		QString schoolName;
 	};
 
 	static VerificationResult verifyLicense( const QString& token = QString() );
 	static bool isActivated();
+
+	static bool requireActivation( QWidget* parent = nullptr, const QString& featureName = QString() );
 
 	static void activateOnline( const QString& licenseKey,
 								std::function<void( bool success, const QString& message, const VerificationResult& result )> callback );

@@ -4,6 +4,7 @@
 
 #include "LicensingPlugin.h"
 #include "LicenseActivationDialog.h"
+#include "ThemeManager.h"
 #include "VeyonMasterInterface.h"
 
 LicensingPlugin::LicensingPlugin( QObject* parent ) :
@@ -15,7 +16,14 @@ LicensingPlugin::LicensingPlugin( QObject* parent ) :
 						tr( "License Activation" ), tr( "License Activation" ),
 						tr( "Activate and manage software license online via cloud." ),
 						QStringLiteral(":/licensing/license.png") ),
-	m_features( { m_licensingFeature } )
+	m_themeFeature( QStringLiteral( "SaudiThemes" ),
+					Feature::Flag::Action | Feature::Flag::Master,
+					Feature::Uid( "48f93a12-8172-4e09-92db-a5170d10b802" ),
+					{},
+					tr( "Saudi Themes" ), tr( "Saudi Themes" ),
+					tr( "Select from 3 authentic Saudi Arabian UI themes (Vision 2030, Founding Day, Modern Najd)." ),
+					QStringLiteral(":/licensing/license.png") ),
+	m_features( { m_licensingFeature, m_themeFeature } )
 {
 }
 
@@ -41,6 +49,11 @@ bool LicensingPlugin::startFeature( VeyonMasterInterface& master,
 		auto dlg = new LicenseActivationDialog( master.mainWindow() );
 		dlg->setAttribute( Qt::WA_DeleteOnClose );
 		dlg->show();
+		return true;
+	}
+	else if( feature.uid() == m_themeFeature.uid() )
+	{
+		ThemeManager::showThemeSelectionDialog( master.mainWindow() );
 		return true;
 	}
 

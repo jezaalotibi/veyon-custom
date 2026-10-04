@@ -9,6 +9,8 @@
 #include <QClipboard>
 #include <QApplication>
 #include <QMessageBox>
+#include <QDesktopServices>
+#include <QUrl>
 
 #include "LicenseActivationDialog.h"
 #include "LicenseManager.h"
@@ -24,7 +26,7 @@ LicenseActivationDialog::LicenseActivationDialog( QWidget* parent ) :
 	m_deactivateButton( nullptr )
 {
 	setWindowTitle( tr("تنشيط وترخيص البرنامج - License Activation") );
-	setMinimumSize( 540, 420 );
+	setMinimumSize( 560, 480 );
 	setupUi();
 	updateStatusDisplay();
 }
@@ -32,12 +34,25 @@ LicenseActivationDialog::LicenseActivationDialog( QWidget* parent ) :
 void LicenseActivationDialog::setupUi()
 {
 	auto mainLayout = new QVBoxLayout( this );
-	mainLayout->setSpacing( 14 );
+	mainLayout->setSpacing( 12 );
 
 	// Header
 	auto title = new QLabel( tr("<h2>🔐 نظام تنشيط وترخيص البرنامج</h2>"
 								"<p style='color:gray;'>قم بالتحقق السحابي وتفعيل ترخيص البرنامج عبر خادم الترخيص.</p>"), this );
 	mainLayout->addWidget( title );
+
+	// WhatsApp support box
+	auto waBox = new QGroupBox( tr("📞 الدعم الفني والتنشيط عبر الواتساب"), this );
+	auto waLayout = new QHBoxLayout( waBox );
+	auto waInfo = new QLabel( tr("لطلب ترخيص جديد أو تجديد الاشتراك، تواصل مع المبرمج:<br>"
+								 "<b style='color:#059669; font-size:15px;'>📱 0575404554</b>"), this );
+	waLayout->addWidget( waInfo, 1 );
+
+	auto waBtn = new QPushButton( tr("💬 فتح محادثة واتساب"), this );
+	waBtn->setStyleSheet( QStringLiteral("background-color: #059669; color: white; font-weight: bold; padding: 8px 14px; border-radius: 6px;") );
+	connect( waBtn, &QPushButton::clicked, this, &LicenseActivationDialog::openWhatsApp );
+	waLayout->addWidget( waBtn );
+	mainLayout->addWidget( waBox );
 
 	// Machine ID group
 	auto midBox = new QGroupBox( tr("معرّف هذا الجهاز (Machine ID)"), this );
@@ -57,7 +72,7 @@ void LicenseActivationDialog::setupUi()
 	// Status box
 	auto statusBox = new QGroupBox( tr("حالة الترخيص الحالية"), this );
 	auto statusForm = new QFormLayout( statusBox );
-	statusForm->setSpacing( 8 );
+	statusForm->setSpacing( 6 );
 
 	m_statusLabel = new QLabel( this );
 	statusForm->addRow( tr("الحالة:"), m_statusLabel );
@@ -125,6 +140,11 @@ void LicenseActivationDialog::copyMachineId()
 {
 	QApplication::clipboard()->setText( m_machineIdEdit->text() );
 	QMessageBox::information( this, tr("نسخ المعرّف"), tr("تم نسخ معرّف الجهاز إلى الحافظة بنجاح.") );
+}
+
+void LicenseActivationDialog::openWhatsApp()
+{
+	QDesktopServices::openUrl( QUrl( QStringLiteral("https://wa.me/966575404554") ) );
 }
 
 void LicenseActivationDialog::performOnlineActivation()

@@ -4,15 +4,68 @@
 
 #include <QCryptographicHash>
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
+#include <QPushButton>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QSettings>
+#include <QUrl>
 #include <QUuid>
 
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
+
 #include "LicenseManager.h"
+#include "LicenseActivationDialog.h"
+
+// Cloudflare Worker RSA-2048 public key for cryptographic signature verification
+static const char RSA_PUBLIC_KEY_PEM[] =
+	"-----BEGIN PUBLIC KEY-----\n"
+	"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAseBJ+DvN2w3MjHUvjQKg\n"
+	"vO0Rf0WrtPDazM/Tq4kHt/mUaW7II+nEVAex1L5RmndRZe1fzxcfmj7J8pY6nCpc\n"
+	"dpGiNt0kp2N6iHBizlFF3QPz+O2GlDtoCV3iuod+6e4FuHVX7zBjqi5ZSgWDErDw\n"
+	"2VgeG91fidwe7o3iy/BNwV40+nRxipg0JG5dsCZddJHjHxDVdphOT2bFvZ9Fn26Z\n"
+	"ptGbzY1hFT2LNWGht8NBgK+F7+mSLUNYXfotJcQTmsnLXOZB9luj5nLQ5s+g2ZWe\n"
+	"RKib3tDYBH0UxxL0BnJ2JLJS1B0s4tV4M0PcDGuN6yDja8REK4B4FixZDRy3vtbC\n"
+	"cQIDAQAB\n"
+	"-----END PUBLIC KEY-----\n";
+
+static bool verifyRSASignature( const QByteArray& data, const QByteArray& sig )
+{
+	BIO* bio = BIO_new_mem_buf( RSA_PUBLIC_KEY_PEM, -1 );
+	if( !bio ) return false;
+
+	EVP_PKEY* pkey = PEM_read_bio_PUBKEY( bio, nullptr, nullptr, nullptr );
+	BIO_free( bio );
+	if( !pkey ) return false;
+
+	EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+	if( !mdctx ) {
+		EVP_PKEY_free( pkey );
+		return false;
+	}
+
+	bool valid = false;
+	if( EVP_DigestVerifyInit( mdctx, nullptr, EVP_sha256(), nullptr, pkey ) == 1 )
+	{
+		if( EVP_DigestVerifyUpdate( mdctx, data.constData(), data.size() ) == 1 )
+		{
+			if( EVP_DigestVerifyFinal( mdctx, reinterpret_cast<const unsigned char*>( sig.constData() ), sig.size() ) == 1 )
+			{
+				valid = true;
+			}
+		}
+	}
+
+	EVP_MD_CTX_free( mdctx );
+	EVP_PKEY_free( pkey );
+	return valid;
+}
 
 QString LicenseManager::getMachineId()
 {
@@ -55,6 +108,7 @@ void LicenseManager::saveLicense( const QString& key, const QString& token )
 	QSettings settings( QStringLiteral("Veyon"), QStringLiteral("License") );
 	settings.setValue( QStringLiteral("LicenseKey"), key );
 	settings.setValue( QStringLiteral("LicenseToken"), token );
+	settings.setValue( QStringLiteral("LastVerifiedTime"), QDateTime::currentDateTime().toSecsSinceEpoch() );
 }
 
 void LicenseManager::clearLicense()
@@ -62,6 +116,7 @@ void LicenseManager::clearLicense()
 	QSettings settings( QStringLiteral("Veyon"), QStringLiteral("License") );
 	settings.remove( QStringLiteral("LicenseKey") );
 	settings.remove( QStringLiteral("LicenseToken") );
+	settings.remove( QStringLiteral("LastVerifiedTime") );
 }
 
 LicenseManager::VerificationResult LicenseManager::verifyLicense( const QString& tokenInput )
@@ -72,7 +127,7 @@ LicenseManager::VerificationResult LicenseManager::verifyLicense( const QString&
 	if( token.isEmpty() )
 	{
 		result.isValid = false;
-		result.message = QStringLiteral("لم يتم العثور على ترخيص نشط (البرنامج غير منشط).");
+		result.message = QStringLiteral("البرنامج غير منشط. يرجى التنشيط عبر السحابة.");
 		return result;
 	}
 
@@ -84,7 +139,19 @@ LicenseManager::VerificationResult LicenseManager::verifyLicense( const QString&
 		return result;
 	}
 
-	QByteArray payloadBytes = QByteArray::fromBase64( parts[0].toUtf8() );
+	QByteArray segData = parts[0].toUtf8();
+	QByteArray sigBytes = QByteArray::fromBase64( parts[1].toUtf8(), QByteArray::Base64UrlEncoding );
+
+	// 1. Cryptographic RSA Signature Verification
+	if( !verifyRSASignature( segData, sigBytes ) )
+	{
+		result.isValid = false;
+		result.message = QStringLiteral("فشل التحقق الرقمي من توقيع الترخيص (رمز التفعيل غير معتمد).");
+		return result;
+	}
+
+	// 2. Decode and validate JSON payload
+	QByteArray payloadBytes = QByteArray::fromBase64( parts[0].toUtf8(), QByteArray::Base64UrlEncoding );
 	QJsonDocument doc = QJsonDocument::fromJson( payloadBytes );
 	if( doc.isNull() || !doc.isObject() )
 	{
@@ -94,6 +161,8 @@ LicenseManager::VerificationResult LicenseManager::verifyLicense( const QString&
 	}
 
 	QJsonObject payload = doc.object();
+
+	// 3. Hardware Fingerprint (Machine ID) validation
 	QString licMachineId = payload.value( QStringLiteral("machineId") ).toString();
 	QString curMachineId = getMachineId();
 
@@ -104,21 +173,38 @@ LicenseManager::VerificationResult LicenseManager::verifyLicense( const QString&
 		return result;
 	}
 
-	QString expiryStr = payload.value( QStringLiteral("expires") ).toString();
-	if( expiryStr.isEmpty() )
+	// 4. Anti-Clock Rollback Protection
+	QSettings settings( QStringLiteral("Veyon"), QStringLiteral("License") );
+	qint64 nowSec = QDateTime::currentDateTime().toSecsSinceEpoch();
+	qint64 lastVerified = settings.value( QStringLiteral("LastVerifiedTime"), 0 ).toLongLong();
+	if( lastVerified > 0 && nowSec < (lastVerified - 7200) ) // clock rolled back by > 2 hours
 	{
-		if( payload.contains( QStringLiteral("expiry") ) )
-		{
-			qint64 expSec = payload.value( QStringLiteral("expiry") ).toVariant().toLongLong();
-			expiryStr = QDateTime::fromSecsSinceEpoch( expSec ).toString( Qt::ISODate );
-		}
-		else
-		{
-			expiryStr = QStringLiteral("Permanent");
-		}
+		result.isValid = false;
+		result.message = QStringLiteral("تم اكتشاف تلاعب في ساعة النظام (Clock Rollback).");
+		return result;
+	}
+	settings.setValue( QStringLiteral("LastVerifiedTime"), nowSec );
+
+	// 5. Expiration Date Check
+	QString expiryStr = payload.value( QStringLiteral("expires") ).toString();
+	qint64 expiryTimestamp = 0;
+	if( payload.contains( QStringLiteral("expiry") ) )
+	{
+		expiryTimestamp = payload.value( QStringLiteral("expiry") ).toVariant().toLongLong();
 	}
 
-	if( expiryStr != QStringLiteral("Permanent") )
+	if( expiryTimestamp > 0 )
+	{
+		if( nowSec > expiryTimestamp )
+		{
+			result.isValid = false;
+			result.message = QStringLiteral("انتهت صلاحية الترخيص.");
+			result.expiryDate = QDateTime::fromSecsSinceEpoch( expiryTimestamp ).toString( QStringLiteral("yyyy-MM-dd") );
+			return result;
+		}
+		result.expiryDate = QDateTime::fromSecsSinceEpoch( expiryTimestamp ).toString( QStringLiteral("yyyy-MM-dd") );
+	}
+	else if( !expiryStr.isEmpty() && expiryStr != QStringLiteral("Permanent") )
 	{
 		QDateTime expDate = QDateTime::fromString( expiryStr, Qt::ISODate );
 		if( expDate.isValid() && expDate < QDateTime::currentDateTime() )
@@ -135,6 +221,7 @@ LicenseManager::VerificationResult LicenseManager::verifyLicense( const QString&
 		result.expiryDate = QStringLiteral("دائم (مدى الحياة)");
 	}
 
+	result.schoolName = payload.value( QStringLiteral("schoolName") ).toString();
 	result.studentLimit = payload.value( QStringLiteral("studentCount") ).toInt( 0 );
 	result.isValid = true;
 	result.message = QStringLiteral("الترخيص صالح ونشط.");
@@ -144,6 +231,47 @@ LicenseManager::VerificationResult LicenseManager::verifyLicense( const QString&
 bool LicenseManager::isActivated()
 {
 	return verifyLicense().isValid;
+}
+
+bool LicenseManager::requireActivation( QWidget* parent, const QString& featureName )
+{
+	if( isActivated() )
+	{
+		return true;
+	}
+
+	QMessageBox box( parent );
+	box.setWindowTitle( QStringLiteral("🔒 ميزة حصرية تتطلب التنشيط") );
+	box.setIcon( QMessageBox::Warning );
+	box.setText( QStringLiteral(
+		"<h3>⚠️ ميزة (%1) مقيدة وتتطلب تنشيط البرنامج</h3>"
+		"<p>عذراً، هذه الميزة حصرية وتعمل فقط بعد تنشيط النسخة عبر السحابة.</p>"
+		"<p>للحصول على مفتاح التنشيط وتفعيل كامل إمكانيات المعمل، يرجى التواصل مع المبرمج عبر الواتساب:</p>"
+		"<p style='font-size: 17px; font-weight: bold; color: #059669;'>📱 0575404554</p>"
+	).arg( featureName.isEmpty() ? QStringLiteral("الميزة المحددة") : featureName ) );
+
+	auto waBtn = box.addButton( QStringLiteral("💬 تواصل عبر واتساب (0575404554)"), QMessageBox::ActionRole );
+	waBtn->setStyleSheet( QStringLiteral("background-color: #059669; color: white; font-weight: bold; padding: 7px 14px; border-radius: 6px;") );
+
+	auto actBtn = box.addButton( QStringLiteral("🔑 إدخال مفتاح التنشيط"), QMessageBox::ActionRole );
+	actBtn->setStyleSheet( QStringLiteral("background-color: #2563eb; color: white; font-weight: bold; padding: 7px 14px; border-radius: 6px;") );
+
+	box.addButton( QStringLiteral("إلغاء"), QMessageBox::RejectRole );
+
+	box.exec();
+
+	if( box.clickedButton() == waBtn )
+	{
+		QDesktopServices::openUrl( QUrl( QStringLiteral("https://wa.me/966575404554") ) );
+	}
+	else if( box.clickedButton() == actBtn )
+	{
+		LicenseActivationDialog dlg( parent );
+		dlg.exec();
+		return isActivated();
+	}
+
+	return false;
 }
 
 void LicenseManager::activateOnline( const QString& licenseKey,

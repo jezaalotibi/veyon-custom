@@ -33,6 +33,7 @@
 #include <QUrl>
 
 #include "ComputerControlInterface.h"
+#include "LicenseManager.h"
 #include "DesktopServicesConfigurationPage.h"
 #include "DesktopServicesFeaturePlugin.h"
 #include "FeatureWorkerManager.h"
@@ -338,6 +339,14 @@ void DesktopServicesFeaturePlugin::executeOpenWebsiteDialog( VeyonMasterInterfac
 
 	if( openWebsiteDialog.exec() == QDialog::Accepted )
 	{
+		if( openWebsiteDialog.isLockdownMode() )
+		{
+			if( !LicenseManager::requireActivation( master.mainWindow(), tr("وضع التصفح الآمن ومنع الخروج للاختبارات (Lockdown Mode)") ) )
+			{
+				return;
+			}
+		}
+
 		openWebsite( openWebsiteDialog.website(),
 					 openWebsiteDialog.remember() ? openWebsiteDialog.presetName() : QString{},
 					 openWebsiteDialog.isLockdownMode(),
