@@ -24,8 +24,11 @@
 
 #include <QCoreApplication>
 #include <QDesktopServices>
+#include <QFile>
 #include <QKeyEvent>
 #include <QMenu>
+#include <QProcess>
+#include <QSettings>
 #include <QToolButton>
 #include <QUrl>
 
@@ -421,9 +424,58 @@ bool DesktopServicesFeaturePlugin::openWebsite( const QString& urlString, bool l
 	if( lockdownMode )
 	{
 #ifdef Q_OS_WIN
-		QString cmd = QStringLiteral("msedge.exe --kiosk \"%1\" --edge-kiosk-type=fullscreen --no-first-run --disable-pinch --overscroll-history-navigation=0").arg( url.toString() );
-		runApplicationAsUser( cmd );
-		return true;
+		QString browser;
+		const QStringList candidatePaths = {
+			QStringLiteral("C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"),
+			QStringLiteral("C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe"),
+			QStringLiteral("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"),
+			QStringLiteral("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe")
+		};
+		for( const auto& candidate : candidatePaths )
+		{
+			if( QFile::exists( candidate ) )
+			{
+				browser = candidate;
+				break;
+			}
+		}
+
+		if( browser.isEmpty() )
+		{
+			QSettings edgeReg( QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\msedge.exe"), QSettings::NativeFormat );
+			browser = edgeReg.value( QStringLiteral(".") ).toString();
+		}
+
+		const QStringList kioskArgs = {
+			QStringLiteral("--kiosk"),
+			url.toString(),
+			QStringLiteral("--edge-kiosk-type=fullscreen"),
+			QStringLiteral("--no-first-run"),
+			QStringLiteral("--disable-pinch"),
+			QStringLiteral("--overscroll-history-navigation=0")
+		};
+
+		if( !browser.isEmpty() && QProcess::startDetached( browser, kioskArgs ) )
+		{
+			return true;
+		}
+
+		if( QProcess::startDetached( QStringLiteral("cmd.exe"),
+									 { QStringLiteral("/c"), QStringLiteral("start"),
+									   QStringLiteral("msedge"), QStringLiteral("--kiosk"),
+									   url.toString(), QStringLiteral("--edge-kiosk-type=fullscreen") } ) )
+		{
+			return true;
+		}
+
+		if( !browser.isEmpty() )
+		{
+			VeyonCore::platform().coreFunctions().runProgramAsUser(
+				browser, kioskArgs,
+				VeyonCore::platform().userFunctions().queryCurrentUserProperty(PlatformUserFunctions::UserProperty::LoginName),
+				VeyonCore::platform().coreFunctions().activeDesktopName() );
+			return true;
+		}
 #else
 		QString cmd = QStringLiteral("google-chrome --kiosk --no-first-run \"%1\"").arg( url.toString() );
 		runApplicationAsUser( cmd );

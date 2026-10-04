@@ -3,10 +3,12 @@
  */
 
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QDir>
 #include <QImage>
 #include <QMessageBox>
 #include <QProcess>
+#include <QUrl>
 
 #include "ScreenRecorderFeaturePlugin.h"
 #include "Filesystem.h"
@@ -106,6 +108,8 @@ void ScreenRecorderFeaturePlugin::stopRecording( const ComputerControlInterfaceL
 	if( m_activeInterfaces.isEmpty() )
 	{
 		m_recordTimer->stop();
+		const QString baseDir = VeyonCore::filesystem().screenshotDirectoryPath() + QDir::separator() + QStringLiteral("Recordings");
+		QDesktopServices::openUrl( QUrl::fromLocalFile( baseDir ) );
 	}
 }
 
