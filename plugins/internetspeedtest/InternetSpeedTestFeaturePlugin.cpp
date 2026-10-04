@@ -121,8 +121,8 @@ bool InternetSpeedTestFeaturePlugin::handleFeatureMessage( VeyonServerInterface&
 			reply->deleteLater();
 
 			FeatureMessage resultMsg{ m_speedTestFeature.uid(), FeatureCommand::SpeedTestResult };
-			resultMsg.addArgument( argToString(Argument::PingMs), pingMs );
-			resultMsg.addArgument( argToString(Argument::DownloadMbps), downloadMbps );
+			resultMsg.addArgument( Argument::PingMs, pingMs );
+			resultMsg.addArgument( Argument::DownloadMbps, downloadMbps );
 
 			server.sendFeatureMessageReply( messageContext, resultMsg );
 			return true;
@@ -139,8 +139,8 @@ bool InternetSpeedTestFeaturePlugin::handleFeatureMessage( ComputerControlInterf
 	{
 		if( message.command<FeatureCommand>() == FeatureCommand::SpeedTestResult && m_activeDialog != nullptr )
 		{
-			int ping = message.argument( argToString(Argument::PingMs) ).toInt();
-			double speed = message.argument( argToString(Argument::DownloadMbps) ).toDouble();
+			int ping = message.argument( Argument::PingMs ).toInt();
+			double speed = message.argument( Argument::DownloadMbps ).toDouble();
 			QString host = computerControlInterface->computer().hostAddress().toString();
 			m_activeDialog->updateResult( host, ping, speed );
 			return true;

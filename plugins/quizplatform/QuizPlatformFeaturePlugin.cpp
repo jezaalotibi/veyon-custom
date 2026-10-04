@@ -65,10 +65,10 @@ void QuizPlatformFeaturePlugin::dispatchQuizToStudents( const ComputerControlInt
 														bool blockOtherSites )
 {
 	FeatureMessage msg{ m_quizFeature.uid(), FeatureCommand::StartQuizSession };
-	msg.addArgument( argToString(Argument::QuizUrl), url );
-	msg.addArgument( argToString(Argument::QuizTitle), title );
-	msg.addArgument( argToString(Argument::LockdownMode), lockdown );
-	msg.addArgument( argToString(Argument::BlockOtherSites), blockOtherSites );
+	msg.addArgument( Argument::QuizUrl, url );
+	msg.addArgument( Argument::QuizTitle, title );
+	msg.addArgument( Argument::LockdownMode, lockdown );
+	msg.addArgument( Argument::BlockOtherSites, blockOtherSites );
 
 	sendFeatureMessage( msg, computers );
 }
@@ -97,8 +97,8 @@ bool QuizPlatformFeaturePlugin::handleFeatureMessage( VeyonWorkerInterface& work
 	{
 		if( message.command<FeatureCommand>() == FeatureCommand::StartQuizSession )
 		{
-			QString urlString = message.argument( argToString(Argument::QuizUrl) ).toString();
-			bool lockdown = message.argument( argToString(Argument::LockdownMode) ).toBool();
+			QString urlString = message.argument( Argument::QuizUrl ).toString();
+			bool lockdown = message.argument( Argument::LockdownMode ).toBool();
 
 			QUrl url( urlString, QUrl::TolerantMode );
 			if( url.scheme().isEmpty() )

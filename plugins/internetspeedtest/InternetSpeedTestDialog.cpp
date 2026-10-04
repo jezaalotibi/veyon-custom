@@ -165,8 +165,8 @@ void InternetSpeedTestDialog::updateSummaryCards()
 
 		if( downItem && downItem->text().contains( QStringLiteral("Mbps") ) )
 		{
-			double speed = downItem->text().section( ' ', 0, 0 ).toDouble();
-			int ping = pingItem ? pingItem->text().section( ' ', 0, 0 ).toInt() : 0;
+			double speed = downItem->text().section( QLatin1Char(' '), 0, 0 ).toDouble();
+			int ping = pingItem ? pingItem->text().section( QLatin1Char(' '), 0, 0 ).toInt() : 0;
 			totalDownload += speed;
 			totalPing += ping;
 			count++;

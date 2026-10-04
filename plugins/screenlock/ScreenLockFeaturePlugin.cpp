@@ -113,7 +113,7 @@ bool ScreenLockFeaturePlugin::controlFeature( Feature::Uid featureUid, Operation
 			QFile imgFile( customImagePath );
 			if( imgFile.open( QIODevice::ReadOnly ) )
 			{
-				msg.addArgument( argToString(Argument::CustomImageData), imgFile.readAll() );
+				msg.addArgument( Argument::CustomImageData, imgFile.readAll() );
 			}
 		}
 
@@ -233,7 +233,7 @@ bool ScreenLockFeaturePlugin::handleFeatureMessage( VeyonWorkerInterface& worker
 				}
 
 				QPixmap lockPix;
-				const auto customData = message.argument( argToString(Argument::CustomImageData) ).toByteArray();
+				const auto customData = message.argument( Argument::CustomImageData ).toByteArray();
 				if( !customData.isEmpty() )
 				{
 					lockPix.loadFromData( customData );

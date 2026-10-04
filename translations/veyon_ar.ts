@@ -5371,4 +5371,19 @@ Example: [^-]*-(PC[0-9]*)</source>
         <translation>تم إرسال الاختبار بنجاح إلى %1 جهاز طالب!</translation>
     </message>
 </context>
+<context>
+    <name>LicensingPlugin</name>
+    <message>
+        <source>Cloud online license activation and entitlement system</source>
+        <translation>نظام التنشيط السحابي وتراخيص البرنامج عبر الإنترنت</translation>
+    </message>
+    <message>
+        <source>License Activation</source>
+        <translation>تنشيط الترخيص</translation>
+    </message>
+    <message>
+        <source>Activate and manage software license online via cloud.</source>
+        <translation>تنشيط وإدارة ترخيص البرنامج عبر الإنترنت سحابياً.</translation>
+    </message>
+</context>
 </TS>
