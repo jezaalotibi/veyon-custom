@@ -97,7 +97,7 @@ void BatchRenameDialog::setupUi()
 		auto infoLayout = new QVBoxLayout();
 		auto nameIp = new QLabel( QStringLiteral("<b>%1</b> <span style='color:gray;'>%2</span>")
 								  .arg( comp->computerName().isEmpty() ? tr("Student-PC") : comp->computerName(),
-										comp->hostAddress() ) );
+										comp->computer().hostAddress().toString() ) );
 		auto targetLabel = new QLabel( tr("<span style='color:#059669;'>الاسم المستهدف: student-pc%1</span>").arg( i + 1 ) );
 		infoLayout->addWidget( nameIp );
 		infoLayout->addWidget( targetLabel );
@@ -110,7 +110,7 @@ void BatchRenameDialog::setupUi()
 		m_cardsLayout->addWidget( cardWidget );
 
 		DeviceCard dc;
-		dc.hostAddress = comp->hostAddress();
+		dc.hostAddress = comp->computer().hostAddress().toString();
 		dc.computerName = comp->computerName();
 		dc.targetName = QStringLiteral("student-pc%1").arg( i + 1 );
 		dc.statusBadge = statusBadge;
@@ -295,9 +295,9 @@ void BatchRenameDialog::startRenaming()
 			m_deviceCards[m_currentIndex].statusBadge->setStyleSheet( QStringLiteral("font-weight: bold; color: #0284c7; background: #e0f2fe; border-radius: 4px; padding: 4px 8px;") );
 		}
 
-		addLog( tr("📤 إرسال أمر التسمية للجهاز %1 (الهدف: %2)...").arg( comp->hostAddress(), targetName ), QStringLiteral("#fbbf24") );
+		addLog( tr("📤 إرسال أمر التسمية للجهاز %1 (الهدف: %2)...").arg( comp->computer().hostAddress().toString(), targetName ), QStringLiteral("#fbbf24") );
 
-		m_plugin.sendRenameCommand( *comp, targetName, renameHost, passType, passVal );
+		m_plugin.sendRenameCommand( comp, targetName, renameHost, passType, passVal );
 
 		// Simulate completion callback or response
 		QTimer::singleShot( 1200, this, [this, targetName]() {

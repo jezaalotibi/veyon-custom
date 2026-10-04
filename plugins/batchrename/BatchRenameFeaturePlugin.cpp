@@ -58,19 +58,21 @@ bool BatchRenameFeaturePlugin::startFeature( VeyonMasterInterface& master,
 	return false;
 }
 
-void BatchRenameFeaturePlugin::sendRenameCommand( ComputerControlInterface& computer,
+void BatchRenameFeaturePlugin::sendRenameCommand( ComputerControlInterface::Pointer computer,
 												  const QString& targetName,
 												  bool renameHostname,
 												  const QString& passwordType,
 												  const QString& password )
 {
 	FeatureMessage msg{ m_batchRenameFeature.uid(), FeatureCommand::ExecuteRename };
-	msg.addArgument( QStringLiteral("targetName"), targetName );
-	msg.addArgument( QStringLiteral("renameHostname"), renameHostname );
-	msg.addArgument( QStringLiteral("passwordType"), passwordType );
-	msg.addArgument( QStringLiteral("password"), password );
+	msg.addArgument( Argument::TargetName, targetName );
+	msg.addArgument( Argument::RenameHostname, renameHostname );
+	msg.addArgument( Argument::PasswordType, passwordType );
+	msg.addArgument( Argument::Password, password );
 
-	sendFeatureMessage( msg, { &computer } );
+	ComputerControlInterfaceList list;
+	list.append( computer );
+	sendFeatureMessage( msg, list );
 }
 
 bool BatchRenameFeaturePlugin::handleFeatureMessage( VeyonServerInterface& server,
@@ -84,10 +86,10 @@ bool BatchRenameFeaturePlugin::handleFeatureMessage( VeyonServerInterface& serve
 	{
 		if( message.command<FeatureCommand>() == FeatureCommand::ExecuteRename )
 		{
-			QString targetName = message.argument<QString>( QStringLiteral("targetName") );
-			bool renameHostname = message.argument<bool>( QStringLiteral("renameHostname") );
-			QString passwordType = message.argument<QString>( QStringLiteral("passwordType") );
-			QString password = message.argument<QString>( QStringLiteral("password") );
+			QString targetName = message.argument( Argument::TargetName ).toString();
+			bool renameHostname = message.argument( Argument::RenameHostname ).toBool();
+			QString passwordType = message.argument( Argument::PasswordType ).toString();
+			QString password = message.argument( Argument::Password ).toString();
 
 #ifdef Q_OS_WIN
 			// 1. Rename Windows Local User if possible

@@ -71,7 +71,15 @@ public:
 		RenameResponse = 2
 	};
 
-	void sendRenameCommand( ComputerControlInterface& computer,
+	enum class Argument
+	{
+		TargetName = 0,
+		RenameHostname,
+		PasswordType,
+		Password
+	};
+
+	void sendRenameCommand( ComputerControlInterface::Pointer computer,
 							const QString& targetName,
 							bool renameHostname,
 							const QString& passwordType,

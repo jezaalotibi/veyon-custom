@@ -296,9 +296,7 @@ void RemoteDeployDialog::startNetworkScan()
 				sock->disconnectFromHost();
 				sock->deleteLater();
 			} );
-			connect( sock, &QTcpSocket::errorOccurred, [sock]() {
-				sock->deleteLater();
-			} );
+			connect( sock, &QAbstractSocket::errorOccurred, sock, &QObject::deleteLater );
 			sock->connectToHost( ip, 445 );
 
 			int curProg = int( ( double( oct - startOctet + 1 ) / total ) * 100 );
